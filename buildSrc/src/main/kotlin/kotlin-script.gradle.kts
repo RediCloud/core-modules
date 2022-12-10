@@ -22,8 +22,9 @@ repositories {
 }
 
 dependencies {
-    implementation("net.dustrean:api:${BuildConstants.coreVersion}")
+    implementation("net.dustrean.api:api:${BuildConstants.coreVersion}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${BuildConstants.coroutinesVersion}")
+    implementation("org.redisson:redisson:${BuildConstants.redissonVersion}")
 }
 
 tasks {
