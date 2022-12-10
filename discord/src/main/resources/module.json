@@ -3,6 +3,6 @@
   "description": "The module which provides the discord bot to the discord server",
   "version": "1.0.0",
   "mainClasses": {
-    "STANDALONE": "net.dustrean.modules.discord.DiscordModuleMainKt"
+    "STANDALONE": "net.dustrean.modules.discord.DiscordModuleMain"
   }
 }
