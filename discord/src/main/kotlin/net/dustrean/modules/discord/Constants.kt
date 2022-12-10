@@ -1,6 +1,7 @@
 package net.dustrean.modules.discord
 
 import dev.kord.core.Kord
+import dev.kord.core.entity.Guild
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -15,3 +16,6 @@ var config = configBucket.get()
 val kordScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
 lateinit var kord: Kord
+
+lateinit var mainGuild: Guild
+lateinit var teamGuild: Guild
