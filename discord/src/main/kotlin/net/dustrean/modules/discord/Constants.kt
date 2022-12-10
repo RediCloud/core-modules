@@ -8,7 +8,7 @@ import kotlinx.coroutines.SupervisorJob
 import net.dustrean.api.ICoreAPI
 import net.dustrean.modules.discord.data.DiscordConfig
 
-val coreAPI: ICoreAPI = ICoreAPI.INSTANCE
+lateinit var coreAPI: ICoreAPI
 
 val configBucket = coreAPI.getRedisConnection().getRedissonClient().getBucket<DiscordConfig>("config:discord-bot")
 var config = configBucket.get()

@@ -21,6 +21,7 @@ import net.dustrean.modules.discord.util.snowflake
 @Suppress("unused")
 class DiscordModuleMain : Module() {
     override fun onLoad(api: ICoreAPI) {
+        coreAPI = api
         if (!configBucket.isExists) {
             val discordConfig = DiscordConfig()
             configBucket.setAsync(discordConfig)
