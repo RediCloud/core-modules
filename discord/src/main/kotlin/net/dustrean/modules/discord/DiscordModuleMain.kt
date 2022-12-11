@@ -32,7 +32,7 @@ class DiscordModuleMain : Module() {
     @OptIn(PrivilegedIntent::class)
     override fun onEnable(api: ICoreAPI) {
         kordScope.launch {
-            kord = Kord(config.token) {
+            kord = Kord(System.getenv("DISCORD_BOT_TOKEN")) {
                 stackTraceRecovery = true
                 setupCache()
             }
