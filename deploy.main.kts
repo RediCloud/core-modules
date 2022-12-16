@@ -44,5 +44,5 @@ files.forEach {
     deploy(File(it.first).absolutePath.also { s -> println("Deploying $s to ${it.second}")}, it.second)
 }
 sftp.disconnect()
-session.disconnect()
 runCommandSync("service core-standalone start")
+session.disconnect()
