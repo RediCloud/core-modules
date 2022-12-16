@@ -1,7 +1,9 @@
 object BuildConstants {
-    const val coreVersion = "1.0.0"
+    const val coreVersion = "1.0.0-SNAPSHOT"
 
     const val coroutinesVersion = "1.6.4"
+
+    const val redissonVersion = "3.18.0"
 
     const val minestomVersion = "1a01372"
     const val minecraftVersion = "1.19.2"
