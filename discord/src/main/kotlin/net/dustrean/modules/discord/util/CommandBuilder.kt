@@ -28,9 +28,8 @@ class UserCommandBuilder(override val name: String, override val guildID: Snowfl
     override var permissions = Permissions()
 
     @Annotations.BuildLevel.RunsDsl
-    inline fun perform(crossinline event: GuildUserCommandInteractionCreateEvent.() -> Unit) {
+    inline fun perform(crossinline event: GuildUserCommandInteractionCreateEvent.() -> Unit) =
         kord.on<GuildUserCommandInteractionCreateEvent> { event() }
-    }
 
     override suspend fun create() {
         kord.createGuildUserCommand(guildID, name) {
@@ -39,6 +38,11 @@ class UserCommandBuilder(override val name: String, override val guildID: Snowfl
     }
 
 }
+
+@Annotations.TopLevel.CommandDsl
+suspend inline fun userCommand(
+    name: String, guildID: Snowflake, crossinline builder: UserCommandBuilder.() -> Unit
+) = UserCommandBuilder(name, guildID).apply(builder).also { it.create() }
 
 /**
  * @param name The name which is displayed when performing the command
@@ -50,9 +54,8 @@ class MessageCommandBuilder(override val name: String, override val guildID: Sno
     override var permissions = Permissions()
 
     @Annotations.BuildLevel.RunsDsl
-    inline fun perform(crossinline event: GuildMessageCommandInteractionCreateEvent.() -> Unit) {
+    inline fun perform(crossinline event: GuildMessageCommandInteractionCreateEvent.() -> Unit) =
         kord.on<GuildMessageCommandInteractionCreateEvent> { event() }
-    }
 
     override suspend fun create() {
         kord.createGuildMessageCommand(guildID, name) {
@@ -62,12 +65,17 @@ class MessageCommandBuilder(override val name: String, override val guildID: Sno
 
 }
 
+@Annotations.TopLevel.CommandDsl
+suspend inline fun messageCommand(
+    name: String, guildID: Snowflake, crossinline builder: MessageCommandBuilder.() -> Unit
+) = MessageCommandBuilder(name, guildID).apply(builder).also { it.create() }
+
+
 /**
  * @param name The name which is displayed when performing the command
  * @param guildID The guild where the command should be work
  * @param description The description which is displayed when tabbing
  */
-
 @Annotations.TopLevel.CommandDsl
 class InputCommandBuilder(
     override val name: String, override val guildID: Snowflake, private val description: String
@@ -79,9 +87,8 @@ class InputCommandBuilder(
     var groups = mutableListOf<Triple<String, String, suspend GroupCommandBuilder.() -> Unit>>()
 
     @Annotations.BuildLevel.RunsDsl
-    inline fun perform(crossinline event: GuildChatInputCommandInteractionCreateEvent.() -> Unit) {
+    inline fun perform(crossinline event: GuildChatInputCommandInteractionCreateEvent.() -> Unit) =
         kord.on<GuildChatInputCommandInteractionCreateEvent> { event() }
-    }
 
     @Annotations.BuildLevel.ConfigDsl
     fun subCommand(name: String, description: String, block: suspend SubCommandBuilder.() -> Unit) {
@@ -111,9 +118,7 @@ class InputCommandBuilder(
 @Annotations.TopLevel.CommandDsl
 suspend inline fun inputCommand(
     name: String, guildID: Snowflake, description: String, crossinline builder: InputCommandBuilder.() -> Unit
-) {
-    InputCommandBuilder(name, guildID, description).apply(builder).also { it.create() }
-}
+) = InputCommandBuilder(name, guildID, description).apply(builder).also { it.create() }
 
 private class Annotations {
     class TopLevel {
