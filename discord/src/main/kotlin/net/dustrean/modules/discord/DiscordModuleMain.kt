@@ -23,12 +23,12 @@ class DiscordModuleMain : Module() {
     override fun onLoad(api: ICoreAPI) {
         coreAPI = api
         configBucket = coreAPI.getRedisConnection().getRedissonClient().getBucket("config:discord-bot")
-        if (!configBucket.isExists) {
+        config = if (!configBucket.isExists) {
             val discordConfig = DiscordConfig()
             configBucket.setAsync(discordConfig)
-            config = discordConfig
+            discordConfig
         } else {
-            config = configBucket.get()
+            configBucket.get()
         }
     }
 
