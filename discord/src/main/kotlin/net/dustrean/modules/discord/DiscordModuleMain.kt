@@ -22,10 +22,13 @@ import net.dustrean.modules.discord.util.snowflake
 class DiscordModuleMain : Module() {
     override fun onLoad(api: ICoreAPI) {
         coreAPI = api
-        if (!configBucket.isExists) {
+        configBucket = coreAPI.getRedisConnection().getRedissonClient().getBucket("config:discord-bot")
+        config = if (!configBucket.isExists) {
             val discordConfig = DiscordConfig()
             configBucket.setAsync(discordConfig)
-            config = discordConfig
+            discordConfig
+        } else {
+            configBucket.get()
         }
     }
 

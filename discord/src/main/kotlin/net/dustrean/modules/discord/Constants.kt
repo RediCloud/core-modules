@@ -7,11 +7,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import net.dustrean.api.ICoreAPI
 import net.dustrean.modules.discord.data.DiscordConfig
+import org.redisson.api.RBucket
 
 lateinit var coreAPI: ICoreAPI
 
-val configBucket = coreAPI.getRedisConnection().getRedissonClient().getBucket<DiscordConfig>("config:discord-bot")
-var config = configBucket.get()
+lateinit var configBucket: RBucket<DiscordConfig>
+lateinit var config: DiscordConfig
 
 val kordScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 

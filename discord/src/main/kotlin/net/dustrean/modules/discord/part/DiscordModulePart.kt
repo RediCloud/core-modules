@@ -1,6 +1,6 @@
 package net.dustrean.modules.discord.part
 
-import net.dustrean.modules.discord.util.CommandBuilder
+import net.dustrean.modules.discord.util.commands.CommandBuilder
 
 val parts = listOf<DiscordModulePart>(RulePart)
 
