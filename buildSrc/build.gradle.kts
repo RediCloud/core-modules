@@ -28,5 +28,5 @@ dependencies {
     compileOnly(kotlin("gradle-plugin", embeddedKotlinVersion))
     runtimeOnly(kotlin("gradle-plugin", kotlinVersion))
 
-    //implementation(pluginDep("io.papermc.paperweight.userdev", "1.4.0"))
+    implementation(pluginDep("io.papermc.paperweight.userdev", "1.4.0"))
 }
