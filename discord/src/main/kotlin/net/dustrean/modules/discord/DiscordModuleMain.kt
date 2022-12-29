@@ -26,7 +26,8 @@ import net.dustrean.modules.discord.util.snowflake
 class DiscordModuleMain : Module() {
     override fun onLoad(api: ICoreAPI) {
         coreAPI = api
-        GlobalScope.launch {
+        configManager = api.getConfigManager()
+        kordScope.launch {
             config = if (!configManager.exists("discord-bot")) {
                 val discordConfig = DiscordConfig()
                 configManager.createConfig(discordConfig)
