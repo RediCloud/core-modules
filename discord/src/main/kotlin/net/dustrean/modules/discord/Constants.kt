@@ -11,7 +11,7 @@ import org.redisson.api.RBucket
 
 lateinit var coreAPI: ICoreAPI
 
-lateinit var configBucket: RBucket<DiscordConfig>
+var configManager = coreAPI.getConfigManager()
 lateinit var config: DiscordConfig
 
 val kordScope = CoroutineScope(Dispatchers.Default + SupervisorJob())

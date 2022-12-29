@@ -1,3 +1,5 @@
+@file:OptIn(DelicateCoroutinesApi::class, PrivilegedIntent::class)
+
 package net.dustrean.modules.discord
 
 import dev.kord.cache.map.MapLikeCollection
@@ -11,6 +13,8 @@ import dev.kord.core.on
 import dev.kord.gateway.Intents
 import dev.kord.gateway.PrivilegedIntent
 import io.ktor.http.cio.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.dustrean.api.ICoreAPI
 import net.dustrean.api.module.Module
@@ -22,17 +26,17 @@ import net.dustrean.modules.discord.util.snowflake
 class DiscordModuleMain : Module() {
     override fun onLoad(api: ICoreAPI) {
         coreAPI = api
-        configBucket = coreAPI.getRedisConnection().getRedissonClient().getBucket("config:discord-bot")
-        config = if (!configBucket.isExists) {
-            val discordConfig = DiscordConfig()
-            configBucket.setAsync(discordConfig)
-            discordConfig
-        } else {
-            configBucket.get()
+        GlobalScope.launch {
+            config = if (!configManager.exists("discord-bot")) {
+                val discordConfig = DiscordConfig()
+                configManager.createConfig(discordConfig)
+                discordConfig
+            } else {
+                configManager.getConfig("discord-bot", DiscordConfig::class.java)
+            }
         }
     }
 
-    @OptIn(PrivilegedIntent::class)
     override fun onEnable(api: ICoreAPI) {
         kordScope.launch {
             kord = Kord(System.getenv("DISCORD_BOT_TOKEN")) {
