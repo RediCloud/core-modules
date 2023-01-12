@@ -16,6 +16,7 @@ import io.ktor.http.cio.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.dustrean.api.ICoreAPI
 import net.dustrean.api.module.Module
 import net.dustrean.modules.discord.data.DiscordConfig
@@ -24,47 +25,43 @@ import net.dustrean.modules.discord.util.snowflake
 
 @Suppress("unused")
 class DiscordModuleMain : Module() {
-    override fun onLoad(api: ICoreAPI) {
+    override fun onLoad(api: ICoreAPI) = runBlocking {
         coreAPI = api
         configManager = api.getConfigManager()
-        kordScope.launch {
-            config = if (!configManager.exists("discord-bot")) {
-                val discordConfig = DiscordConfig()
-                configManager.createConfig(discordConfig)
-                discordConfig
-            } else {
-                configManager.getConfig("discord-bot", DiscordConfig::class.java)
-            }
+        config = if (!configManager.exists("discord-bot")) {
+            val discordConfig = DiscordConfig()
+            configManager.createConfig(discordConfig)
+            discordConfig
+        } else {
+            configManager.getConfig("discord-bot", DiscordConfig::class.java)
         }
     }
 
-    override fun onEnable(api: ICoreAPI) {
-        kordScope.launch {
-            kord = Kord(System.getenv("DISCORD_BOT_TOKEN")) {
-                stackTraceRecovery = true
-                setupCache()
+    override fun onEnable(api: ICoreAPI) = runBlocking {
+        kord = Kord(System.getenv("DISCORD_BOT_TOKEN")) {
+            stackTraceRecovery = true
+            setupCache()
+        }
+
+        kord.on<ReadyEvent> {
+            mainGuild = kord.getGuildOrThrow(config.publicDiscordID.snowflake)
+            teamGuild = kord.getGuildOrThrow(config.teamDiscordID.snowflake)
+
+            kord.editPresence {
+                status = PresenceStatus.Online
+                playing("on dustrean.net")
             }
 
-            kord.on<ReadyEvent> {
-                mainGuild = kord.getGuildOrThrow(config.publicDiscordID.snowflake)
-                teamGuild = kord.getGuildOrThrow(config.teamDiscordID.snowflake)
-
-                kord.editPresence {
-                    status = PresenceStatus.Online
-                    playing("on dustrean.net")
-                }
-
-                println("Enabling modules:")
-                parts.forEach {
-                    it.init()
-                    it.commands.forEach { command -> command.create() }
-                    println("${it.name} enabled")
-                }
+            println("Enabling discord module parts:")
+            parts.forEach {
+                it.init()
+                it.commands.forEach { command -> command.create() }
+                println("${it.name} enabled")
             }
+        }
 
-            kord.login {
-                intents += Intents.all
-            }
+        kord.login {
+            intents += Intents.all
         }
     }
 
