@@ -1,4 +1,4 @@
-package net.dustrean.modules.discord.part
+package net.dustrean.modules.discord.part.impl
 
 import dev.kord.common.Color
 import dev.kord.common.entity.ButtonStyle
@@ -14,6 +14,7 @@ import dev.kord.rest.builder.message.create.embed
 import net.dustrean.modules.discord.config
 import net.dustrean.modules.discord.kord
 import net.dustrean.modules.discord.mainGuild
+import net.dustrean.modules.discord.part.DiscordModulePart
 import net.dustrean.modules.discord.util.commands.CommandBuilder
 import net.dustrean.modules.discord.util.interactions.InteractionCommandID
 import net.dustrean.modules.discord.util.interactions.button

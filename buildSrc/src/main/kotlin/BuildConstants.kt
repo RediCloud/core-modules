@@ -3,11 +3,11 @@ object BuildConstants {
 
     const val coroutinesVersion = "1.6.4"
 
-    const val redissonVersion = "3.18.0"
+    const val redissonVersion = "3.19.0"
 
-    const val minestomVersion = "1a01372"
+    const val minestomVersion = "91a344aa92"
     const val minecraftVersion = "1.19.2"
-    const val adventureVersion = "4.11.0"
+    const val adventureVersion = "4.12.0"
     const val velocityAPIVersion = "3.1.1"
 
     const val teamspeakAPIVersion = "1.3.0"

@@ -21,14 +21,12 @@ repositories {
 
 dependencies {
     fun pluginDep(id: String, version: String) = "${id}:${id}.gradle.plugin:${version}"
-    val kotlinVersion = "1.7.22"
+    val kotlinVersion = "1.8.0"
 
-    implementation(pluginDep("net.dustrean.libloader", "1.3.3"))
+    implementation(pluginDep("net.dustrean.libloader", "1.5.4"))
 
     compileOnly(kotlin("gradle-plugin", embeddedKotlinVersion))
     runtimeOnly(kotlin("gradle-plugin", kotlinVersion))
 
-    // Paper implementation
-    implementation(pluginDep("io.papermc.paperweight.userdev", "1.3.11"))
-    implementation(pluginDep("net.minecrell.plugin-yml.bukkit", "0.5.2"))
+    implementation(pluginDep("io.papermc.paperweight.userdev", "1.4.0"))
 }

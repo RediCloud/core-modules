@@ -1,8 +1,9 @@
 package net.dustrean.modules.discord.part
 
+import net.dustrean.modules.discord.part.impl.RulePart
 import net.dustrean.modules.discord.util.commands.CommandBuilder
 
-val parts = listOf<DiscordModulePart>(RulePart)
+val parts = listOf<DiscordModulePart>(RulePart, RulePart)
 
 abstract class DiscordModulePart {
     abstract val name: String
