@@ -38,31 +38,36 @@ class DiscordModuleMain : Module() {
     }
 
     override fun onEnable(api: ICoreAPI) = runBlocking {
-        kord = Kord(System.getenv("DISCORD_BOT_TOKEN")) {
-            stackTraceRecovery = true
-            setupCache()
-        }
-
-        kord.on<ReadyEvent> {
-            mainGuild = kord.getGuildOrThrow(config.publicDiscordID.snowflake)
-            teamGuild = kord.getGuildOrThrow(config.teamDiscordID.snowflake)
-
-            kord.editPresence {
-                status = PresenceStatus.Online
-                playing("on dustrean.net")
+        kordScope.launch {
+            kord = Kord(System.getenv("DISCORD_BOT_TOKEN")) {
+                stackTraceRecovery = true
+                setupCache()
             }
 
-            println("Enabling discord module parts:")
-            parts.forEach {
-                it.init()
-                it.commands.forEach { command -> command.create() }
-                println("${it.name} enabled")
-            }
-        }
+            kord.on<ReadyEvent> {
+                mainGuild = kord.getGuildOrThrow(config.publicDiscordID.snowflake)
+                teamGuild = kord.getGuildOrThrow(config.teamDiscordID.snowflake)
 
-        kord.login {
-            intents += Intents.all
-        }
+                kord.editPresence {
+                    status = PresenceStatus.Online
+                    playing("on dustrean.net")
+                }
+
+                println("Enabling discord module parts:")
+                parts.forEach {
+                    it.init()
+                    it.commands.forEach { command -> command.create() }
+                    println("${it.name} enabled")
+                }
+            }
+
+            launch {
+                kord.login {
+                    intents += Intents.all
+                }
+            }
+
+        }.join()
     }
 
     override fun onDisable(api: ICoreAPI) = runBlocking {
