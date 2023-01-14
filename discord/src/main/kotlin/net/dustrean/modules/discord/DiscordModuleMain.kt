@@ -65,7 +65,11 @@ class DiscordModuleMain : Module() {
         }
     }
 
-    override fun onDisable(api: ICoreAPI) {}
+    override fun onDisable(api: ICoreAPI) = runBlocking {
+        try {
+            kord.logout()
+        }catch (_: UninitializedPropertyAccessException){}
+    }
 
     private fun KordBuilder.setupCache() = cache {
         users { cache, description ->
