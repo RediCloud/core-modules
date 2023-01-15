@@ -17,7 +17,10 @@ class MessageCommandBuilder(override val name: String, override val guildID: Sno
 
     @CommandAnnotations.BuildLevel.RunsDsl
     inline fun perform(crossinline event: GuildMessageCommandInteractionCreateEvent.() -> Unit) =
-        kord.on<GuildMessageCommandInteractionCreateEvent> { event() }
+        kord.on<GuildMessageCommandInteractionCreateEvent> {
+            if (interaction.invokedCommandName != name) return@on
+            event()
+        }
 
     override suspend fun create() {
         kord.createGuildMessageCommand(guildID, name) {

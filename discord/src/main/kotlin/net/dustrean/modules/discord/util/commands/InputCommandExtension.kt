@@ -24,7 +24,10 @@ class InputCommandBuilder(
 
     @CommandAnnotations.BuildLevel.RunsDsl
     inline fun perform(crossinline event: GuildChatInputCommandInteractionCreateEvent.() -> Unit) =
-        kord.on<GuildChatInputCommandInteractionCreateEvent> { event() }
+        kord.on<GuildChatInputCommandInteractionCreateEvent> {
+            if (interaction.invokedCommandName != name) return@on
+            event()
+        }
 
     @CommandAnnotations.BuildLevel.ConfigDsl
     fun subCommand(name: String, description: String, block: suspend SubCommandBuilder.() -> Unit) {

@@ -17,7 +17,10 @@ class UserCommandBuilder(override val name: String, override val guildID: Snowfl
 
     @CommandAnnotations.BuildLevel.RunsDsl
     inline fun perform(crossinline event: GuildUserCommandInteractionCreateEvent.() -> Unit) =
-        kord.on<GuildUserCommandInteractionCreateEvent> { event() }
+        kord.on<GuildUserCommandInteractionCreateEvent> {
+            if (interaction.invokedCommandName != name) return@on
+            event()
+        }
 
     override suspend fun create() {
         kord.createGuildUserCommand(guildID, name) {
