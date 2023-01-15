@@ -5,6 +5,7 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.event.interaction.GuildChatInputCommandInteractionCreateEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.interaction.*
+import kotlinx.coroutines.Job
 import net.dustrean.modules.discord.kord
 
 /**
@@ -19,15 +20,35 @@ class InputCommandBuilder(
 
     override var permissions = Permissions()
     var chatInputBuilder: suspend ChatInputCreateBuilder.() -> Unit = { }
-    var subCommands = mutableListOf<Triple<String, String, suspend SubCommandBuilder.() -> Unit>>()
-    var groups = mutableListOf<Triple<String, String, suspend GroupCommandBuilder.() -> Unit>>()
+    var subCommands =
+        mutableListOf<Triple<String, String, suspend SubCommandBuilder.() -> Unit>>()
+    var groups =
+        mutableListOf<Triple<String, String, suspend GroupCommandBuilder.() -> Unit>>()
+    var actions =
+        mutableMapOf<String, ((GuildChatInputCommandInteractionCreateEvent) -> Unit)?>()
+    private val listener = kord.on<GuildChatInputCommandInteractionCreateEvent> {
+        if (interaction.command.rootName != name) return@on
+        val data = interaction.command.data
+        val options = data.options.value
+        options?.forEach { optionData ->
+            val groupName = optionData.name
+            println("Group: $groupName")
+            if (optionData.subCommands.value == null || optionData.subCommands.value!!.isEmpty()) return@on
+            val subCommandName = optionData.subCommands.value!![0].name
+            println("SubCommand: $subCommandName")
+            val perform = actions["${groupName}_${subCommandName}"] ?: return@on
+            println("Performing subcommand")
+            perform(this)
+            return@forEach
+        }
+    }
 
     @CommandAnnotations.BuildLevel.RunsDsl
-    inline fun perform(crossinline event: GuildChatInputCommandInteractionCreateEvent.() -> Unit) =
-        kord.on<GuildChatInputCommandInteractionCreateEvent> {
-            if (interaction.invokedCommandName != name) return@on
-            event()
-        }
+    fun perform(groupContext: GroupCommandBuilder? = null, context: SubCommandBuilder, event: GuildChatInputCommandInteractionCreateEvent.() -> Unit) {
+        var key = context.name
+        if (groupContext != null) key = "${groupContext.name}_$key"
+        actions[key] = event
+    }
 
     @CommandAnnotations.BuildLevel.ConfigDsl
     fun subCommand(name: String, description: String, block: suspend SubCommandBuilder.() -> Unit) {

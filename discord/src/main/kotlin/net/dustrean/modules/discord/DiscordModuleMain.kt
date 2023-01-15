@@ -143,7 +143,7 @@ class DiscordModuleMain : Module() {
                         string("id", "The id of the main guild") {
                             required = true
                         }
-                        perform {
+                        perform(this@group, this@subCommand) {
                             val id = this.interaction.command.strings["id"]!!
                             ioScope.launch {
                                 val guild = kord.getGuildOrNull(id.snowflake)
@@ -173,7 +173,7 @@ class DiscordModuleMain : Module() {
                         string("id", "The id of the team guild") {
                             required = true
                         }
-                        perform {
+                        perform(this@group, this@subCommand) {
                             val id = this.interaction.command.strings["id"]!!
                             ioScope.launch {
                                 val guild = kord.getGuildOrNull(id.snowflake)
@@ -203,7 +203,7 @@ class DiscordModuleMain : Module() {
                         channel("channel", "The log channel") {
                             required = true
                         }
-                        perform {
+                        perform(this@group, this@subCommand) {
                             val channel = this.interaction.command.channels["channel"]!!
                             ioScope.launch {
                                 ioScope.launch {

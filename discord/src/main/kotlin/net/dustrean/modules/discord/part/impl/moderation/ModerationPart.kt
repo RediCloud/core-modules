@@ -46,6 +46,7 @@ object ModerationPart : DiscordModulePart() {
     private val chatModeration = kord.on<MessageCreateEvent> {
         if (message.author?.isBot == true && !config.moderateOtherBots) return@on
         if (!config.chatModerationChannels.contains(message.channelId.value.toLong())) return@on
+        if (message.content.startsWith("/")) return@on
 
         if (cache.containsKey(message.content.lowercase())) {
             val list = cache[message.content.lowercase()]!!
@@ -140,7 +141,7 @@ object ModerationPart : DiscordModulePart() {
             it.value.apply {
                 group("auto-chat-moderation", "Configure the auto chat moderation") {
                     subCommand("state", "Toggle auto chat moderation") {
-                        perform {
+                        perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 config.autoModeration = !config.autoModeration
                                 configManager.saveConfig(config)
@@ -155,7 +156,7 @@ object ModerationPart : DiscordModulePart() {
                         }
                     }
                     subCommand("add-new-channels", "Toggle if new channels should be moderated automatically") {
-                        perform {
+                        perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 config.addNewChannelsToAutoModeration = !config.addNewChannelsToAutoModeration
                                 configManager.saveConfig(config)
@@ -170,7 +171,7 @@ object ModerationPart : DiscordModulePart() {
                         }
                     }
                     subCommand("other-bots", "Toggle if other bots should be moderated") {
-                        perform {
+                        perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 config.moderateOtherBots = !config.moderateOtherBots
                                 configManager.saveConfig(config)
@@ -188,7 +189,7 @@ object ModerationPart : DiscordModulePart() {
                         channel("channel", "The channel to add") {
                             required = true
                         }
-                        perform {
+                        perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 val channel = interaction.command.channels["channel"]!!
                                 if (config.chatModerationChannels.contains(channel.id.value.toLong())) {
@@ -215,7 +216,7 @@ object ModerationPart : DiscordModulePart() {
                         channel("channel", "The channel to remove") {
                             required = true
                         }
-                        perform {
+                        perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 val channel = interaction.command.channels["channel"]!!
                                 if (!config.chatModerationChannels.contains(channel.id.value.toLong())) {
@@ -238,31 +239,33 @@ object ModerationPart : DiscordModulePart() {
                             }
                         }
                     }
-                    perform {
-                        ioScope.launch {
-                            interaction.respondEphemeral {
-                                embed {
-                                    title = "Auto Chat Moderation | DustreanNET"
-                                    description =
-                                        "Auto chat moderation is a feature that automatically moderates messages in the specified channels."
-                                    field {
-                                        name = "Auto moderation (via OpenAI)"
-                                        value = "Enabled: ${config.autoModeration}"
-                                    }
-                                    field {
-                                        name = "Add new channels to auto moderation"
-                                        value = "Enabled: ${config.addNewChannelsToAutoModeration}"
-                                    }
-                                    field {
-                                        name = "Moderate other bots"
-                                        value = "Enabled: ${config.moderateOtherBots}"
-                                    }
-                                    field {
-                                        name = "Auto moderation channels"
-                                        value = "```${
-                                            config.chatModerationChannels.map { kord.getChannel(it.snowflake)?.mention }
-                                                .joinToString { ", " }
-                                        }```"
+                    subCommand("current", "Get current auto chat moderation settings") {
+                        perform(this@group, this@subCommand) {
+                            ioScope.launch {
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Auto Chat Moderation | DustreanNET"
+                                        description =
+                                            "Auto chat moderation is a feature that automatically moderates messages in the specified channels."
+                                        field {
+                                            name = "Auto moderation (via OpenAI)"
+                                            value = "Enabled: ${config.autoModeration}"
+                                        }
+                                        field {
+                                            name = "Add new channels to auto moderation"
+                                            value = "Enabled: ${config.addNewChannelsToAutoModeration}"
+                                        }
+                                        field {
+                                            name = "Moderate other bots"
+                                            value = "Enabled: ${config.moderateOtherBots}"
+                                        }
+                                        field {
+                                            name = "Auto moderation channels"
+                                            value = "```${
+                                                config.chatModerationChannels.map { kord.getChannel(it.snowflake)?.mention }
+                                                    .joinToString { ", " }
+                                            }```"
+                                        }
                                     }
                                 }
                             }
@@ -275,7 +278,7 @@ object ModerationPart : DiscordModulePart() {
 
                 group("log-message-edits", "Configure the log message edits"){
                     subCommand("state", "Toggle log message edits") {
-                        perform {
+                        perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 config.logEdits = !config.logEdits
                                 configManager.saveConfig(config)
@@ -289,7 +292,7 @@ object ModerationPart : DiscordModulePart() {
                         }
                     }
                     subCommand("add-new-channels", "Toggle if new channels should be logged automatically") {
-                        perform {
+                        perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 config.addNewChannelsToLogEdits = !config.addNewChannelsToLogEdits
                                 configManager.saveConfig(config)
@@ -303,7 +306,7 @@ object ModerationPart : DiscordModulePart() {
                         }
                     }
                     subCommand("other-bots", "Toggle if other bots should be logged") {
-                        perform {
+                        perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 config.logBotEdits = !config.logBotEdits
                                 configManager.saveConfig(config)
@@ -320,7 +323,7 @@ object ModerationPart : DiscordModulePart() {
                         channel("channel", "The channel to add"){
                             required = true
                         }
-                        perform {
+                        perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 val channel = interaction.command.channels["channel"]!!
                                 if (config.logEditsInChannels.contains(channel.id.value.toLong())) {
@@ -347,7 +350,7 @@ object ModerationPart : DiscordModulePart() {
                         channel("channel", "The channel to remove"){
                             required = true
                         }
-                        perform {
+                        perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 val channel = interaction.command.channels["channel"]!!
                                 if (!config.logEditsInChannels.contains(channel.id.value.toLong())) {
@@ -370,23 +373,25 @@ object ModerationPart : DiscordModulePart() {
                             }
                         }
                     }
-                    perform {
-                        ioScope.launch {
-                            interaction.respondEphemeral {
-                                embed {
-                                    title = "Log Message Edits | DustreanNET"
-                                    description = "Log message edits is a feature that logs all message edits in the specified channels."
-                                    field {
-                                        name = "Log message edits"
-                                        value = "Enabled: ${config.logEdits}"
-                                    }
-                                    field {
-                                        name = "Log bot edits"
-                                        value = "Enabled: ${config.logBotEdits}"
-                                    }
-                                    field {
-                                        name = "Log message edits channels"
-                                        value = "```${config.logEditsInChannels.map { kord.getChannel(it.snowflake)?.mention }.joinToString { ", " }}```"
+                    subCommand("current", "Get current log message edit settings") {
+                        perform(this@group, this@subCommand) {
+                            ioScope.launch {
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Log Message Edits | DustreanNET"
+                                        description = "Log message edits is a feature that logs all message edits in the specified channels."
+                                        field {
+                                            name = "Log message edits"
+                                            value = "Enabled: ${config.logEdits}"
+                                        }
+                                        field {
+                                            name = "Log bot edits"
+                                            value = "Enabled: ${config.logBotEdits}"
+                                        }
+                                        field {
+                                            name = "Log message edits channels"
+                                            value = "```${config.logEditsInChannels.map { kord.getChannel(it.snowflake)?.mention }.joinToString { ", " }}```"
+                                        }
                                     }
                                 }
                             }
@@ -395,7 +400,7 @@ object ModerationPart : DiscordModulePart() {
                 }
                 group("log-message-deletes", "Configure the log message deletes"){
                     subCommand("state", "Toggle log message deletes") {
-                        perform {
+                        perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 config.logDeletes = !config.logDeletes
                                 configManager.saveConfig(config)
@@ -409,7 +414,7 @@ object ModerationPart : DiscordModulePart() {
                         }
                     }
                     subCommand("add-new-channels", "Toggle if new channels should be logged automatically") {
-                        perform {
+                        perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 config.addNewChannelsToDeletes = !config.addNewChannelsToDeletes
                                 configManager.saveConfig(config)
@@ -423,7 +428,7 @@ object ModerationPart : DiscordModulePart() {
                         }
                     }
                     subCommand("other-bots", "Toggle if other bots should be logged") {
-                        perform {
+                        perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 config.logDeletes = !config.logDeletes
                                 configManager.saveConfig(config)
@@ -440,7 +445,7 @@ object ModerationPart : DiscordModulePart() {
                         channel("channel", "The channel to add"){
                             required = true
                         }
-                        perform {
+                        perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 val channel = interaction.command.channels["channel"]!!
                                 if (config.logDeletesInChannels.contains(channel.id.value.toLong())) {
@@ -467,7 +472,7 @@ object ModerationPart : DiscordModulePart() {
                         channel("channel", "The channel to remove"){
                             required = true
                         }
-                        perform {
+                        perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 val channel = interaction.command.channels["channel"]!!
                                 if (!config.logDeletesInChannels.contains(channel.id.value.toLong())) {
@@ -490,19 +495,25 @@ object ModerationPart : DiscordModulePart() {
                             }
                         }
                     }
-                    perform {
-                        ioScope.launch {
-                            interaction.respondEphemeral {
-                                embed {
-                                    title = "Log Message Deletes | DustreanNET"
-                                    description = "Log message deletes is a feature that logs all message deletes in the specified channels."
-                                    field {
-                                        name = "Log message deletes"
-                                        value = "Enabled: ${config.logDeletes}"
-                                    }
-                                    field {
-                                        name = "Log message deletes channels"
-                                        value = "```${config.logDeletesInChannels.map { kord.getChannel(it.snowflake)?.mention }.joinToString { ", " }}```"
+                    subCommand("current", "Get current log message delete settings") {
+                        perform(this@group, this@subCommand) {
+                            ioScope.launch {
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Log Message Deletes | DustreanNET"
+                                        description =
+                                            "Log message deletes is a feature that logs all message deletes in the specified channels."
+                                        field {
+                                            name = "Log message deletes"
+                                            value = "Enabled: ${config.logDeletes}"
+                                        }
+                                        field {
+                                            name = "Log message deletes channels"
+                                            value = "```${
+                                                config.logDeletesInChannels.map { kord.getChannel(it.snowflake)?.mention }
+                                                    .joinToString { ", " }
+                                            }```"
+                                        }
                                     }
                                 }
                             }
