@@ -31,6 +31,6 @@ class UserCommandBuilder(override val name: String, override val guildID: Snowfl
 }
 
 @CommandAnnotations.TopLevel.CommandDsl
-suspend inline fun userCommand(
+inline fun userCommand(
     name: String, guildID: Snowflake, crossinline builder: UserCommandBuilder.() -> Unit
 ) = UserCommandBuilder(name, guildID).apply(builder)
