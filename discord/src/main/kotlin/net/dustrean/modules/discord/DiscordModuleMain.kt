@@ -11,6 +11,7 @@ import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.builder.kord.KordBuilder
@@ -158,6 +159,7 @@ class DiscordModuleMain : Module() {
                                     }
                                     return@launch
                                 }
+                                mainGuild = guild
                                 config.publicDiscordID = id
                                 configManager.saveConfig(config)
                                 logChannel.createMessage {
@@ -195,6 +197,7 @@ class DiscordModuleMain : Module() {
                                     }
                                     return@launch
                                 }
+                                teamGuild = guild
                                 config.teamDiscordID = id
                                 configManager.saveConfig(config)
                                 logChannel.createMessage {
@@ -234,6 +237,13 @@ class DiscordModuleMain : Module() {
                                     embed {
                                         title = "Info | DustreanNET"
                                         description = "The log channel has been changed to ${channel.mention}"
+                                    }
+                                }
+                                logChannel = channel.asChannelOf()
+                                logChannel.createMessage {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description = "This is now the log channel!"
                                     }
                                 }
                             }
