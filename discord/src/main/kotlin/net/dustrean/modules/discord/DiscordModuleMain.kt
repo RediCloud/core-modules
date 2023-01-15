@@ -37,7 +37,7 @@ class DiscordModuleMain : Module() {
         }
     }
 
-    override fun onEnable(api: ICoreAPI) = runBlocking {
+    override fun onEnable(api: ICoreAPI){
         kordScope.launch {
             kord = Kord(System.getenv("DISCORD_BOT_TOKEN")) {
                 stackTraceRecovery = true
@@ -67,7 +67,7 @@ class DiscordModuleMain : Module() {
                 }
             }
 
-        }.join()
+        }
     }
 
     override fun onDisable(api: ICoreAPI) = runBlocking {
