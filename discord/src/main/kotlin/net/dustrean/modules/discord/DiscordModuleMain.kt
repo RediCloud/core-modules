@@ -34,6 +34,7 @@ import net.dustrean.modules.discord.data.DiscordConfig
 import net.dustrean.modules.discord.part.parts
 import net.dustrean.modules.discord.util.commands.InputCommandBuilder
 import net.dustrean.modules.discord.util.commands.inputCommand
+import net.dustrean.modules.discord.util.message.useDefaultFooter
 import net.dustrean.modules.discord.util.snowflake
 
 @Suppress("unused")
@@ -155,6 +156,7 @@ class DiscordModuleMain : Module() {
                                             title = "Error | DustreanNET"
                                             description = "The guild with the id $id could not be found"
                                             color = Color(255, 0, 0)
+                                            useDefaultFooter(interaction.user)
                                         }
                                     }
                                     return@launch
@@ -167,12 +169,14 @@ class DiscordModuleMain : Module() {
                                         title = "Info | DustreanNET"
                                         description =
                                             "The main guild was changed to ${guild.name} by ${interaction.user.asUser().mention}"
+                                        useDefaultFooter(interaction.user)
                                     }
                                 }
                                 interaction.respondEphemeral {
                                     embed {
                                         title = "Info | DustreanNET"
                                         description = "The main guild was changed to ${guild.name}"
+                                        useDefaultFooter(interaction.user)
                                     }
                                 }
                             }
@@ -193,6 +197,7 @@ class DiscordModuleMain : Module() {
                                             title = "Error | DustreanNET"
                                             description = "The guild with the id $id could not be found"
                                             color = Color(255, 0, 0)
+                                            useDefaultFooter(interaction.user)
                                         }
                                     }
                                     return@launch
@@ -205,6 +210,7 @@ class DiscordModuleMain : Module() {
                                         title = "Info | DustreanNET"
                                         description =
                                             "The team guild has been changed to ${guild.name} by ${interaction.user.asUser().mention}"
+                                        useDefaultFooter(interaction.user)
                                     }
                                 }
                                 interaction.respondEphemeral {
@@ -212,6 +218,7 @@ class DiscordModuleMain : Module() {
                                         title = "Info | DustreanNET"
                                         description =
                                             "The team guild was changed to ${guild.name} by ${interaction.user.asUser().mention}"
+                                        useDefaultFooter(interaction.user)
                                     }
                                 }
                             }
@@ -231,12 +238,14 @@ class DiscordModuleMain : Module() {
                                         title = "Info | DustreanNET"
                                         description =
                                             "The log channel has been changed to ${channel.mention} by ${interaction.user.asUser().mention}"
+                                        useDefaultFooter(interaction.user)
                                     }
                                 }
                                 interaction.respondEphemeral {
                                     embed {
                                         title = "Info | DustreanNET"
                                         description = "The log channel has been changed to ${channel.mention}"
+                                        useDefaultFooter(interaction.user)
                                     }
                                 }
                                 logChannel = channel.asChannelOf()
@@ -244,6 +253,7 @@ class DiscordModuleMain : Module() {
                                     embed {
                                         title = "Info | DustreanNET"
                                         description = "This is now the log channel!"
+                                        useDefaultFooter(interaction.user)
                                     }
                                 }
                             }
