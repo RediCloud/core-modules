@@ -1,4 +1,4 @@
-package net.dustrean.modules.discord.part.impl
+package net.dustrean.modules.discord.part.impl.rule
 
 import dev.kord.common.Color
 import dev.kord.common.entity.ButtonStyle
