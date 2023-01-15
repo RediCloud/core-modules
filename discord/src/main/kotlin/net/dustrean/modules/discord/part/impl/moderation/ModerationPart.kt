@@ -20,6 +20,7 @@ import dev.kord.core.on
 import dev.kord.rest.builder.interaction.channel
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.dustrean.modules.discord.*
 import net.dustrean.modules.discord.part.DiscordModulePart
 import net.dustrean.modules.discord.util.commands.CommandBuilder
@@ -303,9 +304,12 @@ object ModerationPart : DiscordModulePart() {
                                         }
                                         field {
                                             name = "Auto moderation channels"
-                                            value =
-                                                config.chatModerationChannels.map { kord.getChannel(it.snowflake)?.mention }
-                                                    .joinToString { ", " }
+                                            value = if (config.chatModerationChannels.isEmpty()) "No channels"
+                                            else config.chatModerationChannels.joinToString(", ") {
+                                                runBlocking {
+                                                    kord.getChannel(it.snowflake)?.mention ?: "Unknown channel ($it)"
+                                                }
+                                            }
                                         }
                                         useDefaultFooter(interaction.user)
                                     }
@@ -443,9 +447,12 @@ object ModerationPart : DiscordModulePart() {
                                         }
                                         field {
                                             name = "Log message edits channels"
-                                            value =
-                                                config.logEditsInChannels.map { kord.getChannel(it.snowflake)?.mention }
-                                                    .joinToString { ", " }
+                                            value = if (config.logEditsInChannels.isEmpty()) "No channels"
+                                            else config.logEditsInChannels.joinToString(", ") {
+                                                runBlocking {
+                                                    kord.getChannel(it.snowflake)?.mention ?: "Unknown channel ($it)"
+                                                }
+                                            }
                                         }
                                         useDefaultFooter(interaction.user)
                                     }
@@ -575,9 +582,12 @@ object ModerationPart : DiscordModulePart() {
                                         }
                                         field {
                                             name = "Log message deletes channels"
-                                            value =
-                                                config.logDeletesInChannels.map { kord.getChannel(it.snowflake)?.mention }
-                                                    .joinToString { ", " }
+                                            value = if (config.logDeletesInChannels.isEmpty()) "No channels"
+                                            else config.logDeletesInChannels.joinToString(", ") {
+                                                runBlocking {
+                                                    kord.getChannel(it.snowflake)?.mention ?: "Unknown channel ($it)"
+                                                }
+                                            }
                                         }
                                         useDefaultFooter(interaction.user)
                                     }
