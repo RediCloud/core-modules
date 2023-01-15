@@ -32,12 +32,9 @@ class InputCommandBuilder(
         val options = data.options.value
         options?.forEach { optionData ->
             val groupName = optionData.name
-            println("Group: $groupName")
             if (optionData.subCommands.value == null || optionData.subCommands.value!!.isEmpty()) return@on
             val subCommandName = optionData.subCommands.value!![0].name
-            println("SubCommand: $subCommandName")
             val perform = actions["${groupName}_${subCommandName}"] ?: return@on
-            println("Performing subcommand")
             perform(this)
             return@forEach
         }
