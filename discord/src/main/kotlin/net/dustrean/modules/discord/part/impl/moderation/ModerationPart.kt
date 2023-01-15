@@ -12,6 +12,7 @@ import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.channel.TextChannelCreateEvent
+import dev.kord.core.event.channel.TextChannelDeleteEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.MessageDeleteEvent
 import dev.kord.core.event.message.MessageUpdateEvent
@@ -115,6 +116,12 @@ object ModerationPart : DiscordModulePart() {
         if (config.addNewChannelsToAutoModeration) {
             config.chatModerationChannels.add(channel.id.value.toLong())
         }
+    }
+
+    private val channelDelete = kord.on<TextChannelDeleteEvent> {
+        config.logDeletesInChannels.remove(channel.id.value.toLong())
+        config.logEditsInChannels.remove(channel.id.value.toLong())
+        config.chatModerationChannels.remove(channel.id.value.toLong())
     }
 
     private val logEdits = kord.on<MessageUpdateEvent> {
