@@ -1,4 +1,4 @@
-package net.dustrean.modules.discord.part.impl
+package net.dustrean.modules.discord.part.impl.moderation
 
 import com.aallam.openai.api.moderation.ModerationRequest
 import com.aallam.openai.api.moderation.ModerationResult
@@ -6,6 +6,8 @@ import com.aallam.openai.client.OpenAI
 import com.aallam.openai.client.OpenAIConfig
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
+import net.dustrean.modules.discord.configManager
+import net.dustrean.modules.discord.data.DiscordConfig
 import net.dustrean.modules.discord.kord
 import net.dustrean.modules.discord.mainGuild
 import net.dustrean.modules.discord.part.DiscordModulePart
@@ -16,15 +18,25 @@ class ChatModerationPart() : DiscordModulePart() {
     override val name: String = "ChatModeration"
     override val commands: List<CommandBuilder> = listOf()
     private lateinit var openAi: OpenAI
+    private lateinit var config: ChatModerationConfig
     private val cache = mutableMapOf<String, List<ModerationResult>>()
 
     override suspend fun init() {
-        val config = OpenAIConfig(System.getenv("OPENAI_API_KEY"))
-        openAi = OpenAI(config)
+        openAi = OpenAI(System.getenv("OPENAI_API_KEY"))
+        config = if (!configManager.exists("discord-bot:chat-moderation")) {
+            val config = ChatModerationConfig()
+            configManager.createConfig(config)
+            config
+        } else {
+            configManager.getConfig("discord-bot:chat-moderation", ChatModerationConfig::class.java)
+        }
     }
 
     private val chat = kord.on<MessageCreateEvent> {
         if (message.getGuild() != mainGuild) return@on
+        if (message.author?.isBot == true) return@on
+        if (!config.channels.contains(message.channelId.value.toLong())) return@on
+
         if (cache.containsKey(message.content.lowercase())) {
             val list = cache[message.content.lowercase()]!!
             val violations = getViolations(list)
