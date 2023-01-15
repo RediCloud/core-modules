@@ -2,25 +2,33 @@ package net.dustrean.modules.discord.part.impl.rule
 
 import dev.kord.common.Color
 import dev.kord.common.entity.*
+import dev.kord.common.entity.optional.OptionalBoolean
+import dev.kord.common.entity.optional.optional
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.edit
 import dev.kord.core.behavior.getChannelOf
+import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.channel.*
 import dev.kord.core.event.channel.ChannelCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.component.ActionRowBuilder
+import dev.kord.rest.builder.interaction.boolean
+import dev.kord.rest.builder.interaction.role
+import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.message.create.actionRow
 import dev.kord.rest.builder.message.create.embed
-import net.dustrean.modules.discord.configManager
-import net.dustrean.modules.discord.kord
-import net.dustrean.modules.discord.mainGuild
+import dev.kord.rest.builder.message.modify.embed
+import kotlinx.coroutines.launch
+import net.dustrean.modules.discord.*
 import net.dustrean.modules.discord.part.DiscordModulePart
 import net.dustrean.modules.discord.util.commands.CommandBuilder
 import net.dustrean.modules.discord.util.interactions.InteractionCommandID
 import net.dustrean.modules.discord.util.interactions.button
+import net.dustrean.modules.discord.util.message.useDefaultFooter
+import net.dustrean.modules.discord.util.message.userFooter
 import net.dustrean.modules.discord.util.snowflake
 
 object RulePart : DiscordModulePart() {
@@ -100,7 +108,7 @@ object RulePart : DiscordModulePart() {
     }
 
     private fun ActionRowBuilder.acceptButton() = button(ButtonStyle.Success, InteractionCommandID.RULE_TRIGGER) {
-        emoji = DiscordPartialEmoji(name = config.acceptEmoji, id = null)
+        emoji = config.acceptEmoji
 
         perform {
             if (interaction.guildId != mainGuild.id) return@perform
@@ -110,14 +118,79 @@ object RulePart : DiscordModulePart() {
             if (member.roleIds.contains(config.acceptRole.snowflake)) {
                 member.removeRole(config.acceptRole.snowflake)
                 response.respond {
-                    content = "Your player role was revoked!"
+                    embed {
+                        title = "Rules | DustreanNET"
+                        description = "Your player role was revoked!"
+                        useDefaultFooter(interaction.user)
+                    }
                 }
                 return@perform
             }
 
             member.addRole(config.acceptRole.snowflake)
             response.respond {
-                content = "The player role was added to you!"
+                embed {
+                    title = "Rules | DustreanNET"
+                    description = "The player role was added to you!"
+                    useDefaultFooter(interaction.user)
+                }
+            }
+        }
+    }
+
+    private fun loadConfigCommand(){
+        DiscordModuleMain.CONFIG_COMMANDS.forEach {
+            it.value.apply {
+                group("rules", "Configure the rule module") {
+                    subCommand("emoji", "Set the emoji for the accept button") {
+                        string("id", "The emoji id for the accept button") {
+                            required = false
+                        }
+                        string("name", "The emoji name for the accept button") {
+                            required = false
+                        }
+                        boolean("animated", "Is the emoji animated?") {
+                            required = false
+                        }
+                        perform(this@group, this@subCommand) {
+                            val id = interaction.command.strings["id"]
+                            val name = interaction.command.strings["name"]
+                            val animated = interaction.command.booleans["animated"]
+                            val emoji = DiscordPartialEmoji(id?.snowflake, name, OptionalBoolean.Value(animated ?: false))
+                            val rawEmoji = if(emoji.id != null) "<${if(emoji.animated == OptionalBoolean.Value(true)) "a" else ""}:${emoji.name}:${emoji.id}>" else emoji.name
+                            ioScope.launch {
+                                config.acceptEmoji = emoji
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description = "The accept emoji was set to $rawEmoji"
+                                        useDefaultFooter(interaction.user)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    subCommand("role", "Set the role for the accept button") {
+                        role("role", "The role for the accept button") {
+                            required = true
+                        }
+                        perform(this@group, this@subCommand) {
+                            val role = interaction.command.roles["role"]!!
+                            ioScope.launch {
+                                config.acceptRole = role.id.value.toLong()
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description = "The accept role was set to ${role.mention}"
+                                        useDefaultFooter(interaction.user)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
