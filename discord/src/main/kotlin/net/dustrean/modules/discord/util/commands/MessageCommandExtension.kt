@@ -33,4 +33,4 @@ class MessageCommandBuilder(override val name: String, override val guildID: Sno
 @CommandAnnotations.TopLevel.CommandDsl
 suspend inline fun messageCommand(
     name: String, guildID: Snowflake, crossinline builder: MessageCommandBuilder.() -> Unit
-) = MessageCommandBuilder(name, guildID).apply(builder).also { it.create() }
+) = MessageCommandBuilder(name, guildID).apply(builder)

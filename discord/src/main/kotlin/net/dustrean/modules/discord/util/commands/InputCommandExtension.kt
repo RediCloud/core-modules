@@ -55,6 +55,6 @@ class InputCommandBuilder(
 }
 
 @CommandAnnotations.TopLevel.CommandDsl
-suspend inline fun inputCommand(
+inline fun inputCommand(
     name: String, guildID: Snowflake, description: String, crossinline builder: InputCommandBuilder.() -> Unit
-) = InputCommandBuilder(name, guildID, description).apply(builder).also { it.create() }
+) = InputCommandBuilder(name, guildID, description).apply(builder)
