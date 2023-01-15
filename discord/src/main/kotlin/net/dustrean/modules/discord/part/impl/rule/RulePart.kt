@@ -18,7 +18,7 @@ import net.dustrean.modules.discord.part.DiscordModulePart
 import net.dustrean.modules.discord.util.commands.CommandBuilder
 import net.dustrean.modules.discord.util.interactions.InteractionCommandID
 import net.dustrean.modules.discord.util.interactions.button
-import net.dustrean.modules.discord.util.snowflake
+import net.dustrean.modules.discord.util.toSnowflake
 
 object RulePart : DiscordModulePart() {
 
@@ -55,15 +55,15 @@ object RulePart : DiscordModulePart() {
             val response = interaction.deferEphemeralResponse()
 
             val member = interaction.user.asMember()
-            if (member.roleIds.contains(config.roles.playerID.snowflake)) {
-                member.removeRole(config.roles.playerID.snowflake)
+            if (member.roleIds.contains(config.roles.playerID.toSnowflake)) {
+                member.removeRole(config.roles.playerID.toSnowflake)
                 response.respond {
                     content = "Your player role was revoked!"
                 }
                 return@perform
             }
 
-            member.addRole(config.roles.playerID.snowflake)
+            member.addRole(config.roles.playerID.toSnowflake)
             response.respond {
                 content = "The player role was added to you!"
             }

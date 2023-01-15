@@ -14,14 +14,13 @@ import dev.kord.gateway.Intents
 import dev.kord.gateway.PrivilegedIntent
 import io.ktor.http.cio.*
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.dustrean.api.ICoreAPI
 import net.dustrean.api.module.Module
 import net.dustrean.modules.discord.data.DiscordConfig
 import net.dustrean.modules.discord.part.parts
-import net.dustrean.modules.discord.util.snowflake
+import net.dustrean.modules.discord.util.toSnowflake
 
 @Suppress("unused")
 class DiscordModuleMain : Module() {
@@ -45,8 +44,8 @@ class DiscordModuleMain : Module() {
             }
 
             kord.on<ReadyEvent> {
-                mainGuild = kord.getGuildOrThrow(config.publicDiscordID.snowflake)
-                teamGuild = kord.getGuildOrThrow(config.teamDiscordID.snowflake)
+                mainGuild = kord.getGuildOrThrow(config.publicDiscordID.toSnowflake)
+                teamGuild = kord.getGuildOrThrow(config.teamDiscordID.toSnowflake)
 
                 kord.editPresence {
                     status = PresenceStatus.Online
