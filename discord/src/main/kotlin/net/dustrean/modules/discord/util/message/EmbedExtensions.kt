@@ -12,7 +12,7 @@ fun EmbedBuilder.userFooter(user: User, format: String? = null) = footer {
 
 fun EmbedBuilder.useDefaultFooter(user: User?) = footer {
     icon = user?.avatar?.url
-    text = "DustreanNET • Requested by ${user?.username}"
+    text = "DustreanNET • Requested by ${user?.username}#${user?.discriminator}"
 }
 
 suspend fun EmbedBuilder.selfFooter() = userFooter(kord.getSelf())
