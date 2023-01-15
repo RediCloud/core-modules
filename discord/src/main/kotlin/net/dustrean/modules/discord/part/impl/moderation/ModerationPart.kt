@@ -32,7 +32,7 @@ object ModerationPart : DiscordModulePart() {
     private val cache = mutableMapOf<String, List<ModerationResult>>()
 
     override suspend fun init() {
-        openAi = OpenAI(OpenAIConfig(System.getenv("OPENAI_API_KEY"), LogLevel.Info))
+        openAi = OpenAI(OpenAIConfig(System.getenv("OPENAI_API_KEY"), LogLevel.None))
         config = if (!configManager.exists("discord:modules:moderation")) {
             val config = ModerationConfig()
             configManager.createConfig(config)
