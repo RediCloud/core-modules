@@ -2,8 +2,8 @@ package net.dustrean.modules.discord.util
 
 import dev.kord.common.entity.Snowflake
 
-val String.toSnowflake
+val String.snowflake
     get() = Snowflake(this)
 
-val Long.toSnowflake
+val Long.snowflake
     get() = Snowflake(this)

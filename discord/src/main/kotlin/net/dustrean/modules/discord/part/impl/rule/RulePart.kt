@@ -11,22 +11,29 @@ import dev.kord.core.on
 import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.message.create.actionRow
 import dev.kord.rest.builder.message.create.embed
-import net.dustrean.modules.discord.config
+import net.dustrean.modules.discord.configManager
 import net.dustrean.modules.discord.kord
 import net.dustrean.modules.discord.mainGuild
 import net.dustrean.modules.discord.part.DiscordModulePart
 import net.dustrean.modules.discord.util.commands.CommandBuilder
 import net.dustrean.modules.discord.util.interactions.InteractionCommandID
 import net.dustrean.modules.discord.util.interactions.button
-import net.dustrean.modules.discord.util.toSnowflake
+import net.dustrean.modules.discord.util.snowflake
 
 object RulePart : DiscordModulePart() {
 
     override val name: String = "Rule"
     override val commands: List<CommandBuilder> = listOf()
+    lateinit var config: RuleConfig
 
     override suspend fun init() {
-        ruleMessageHandler
+        config = if (!configManager.exists("discord:modules:rule")) {
+            val config = RuleConfig()
+            configManager.createConfig(config)
+            config
+        } else {
+            configManager.getConfig("discord:modules:rule", RuleConfig::class.java)
+        }
     }
 
     private val ruleMessageHandler = kord.on<MessageCreateEvent> {
@@ -48,22 +55,22 @@ object RulePart : DiscordModulePart() {
     }
 
     private fun ActionRowBuilder.acceptButton() = button(ButtonStyle.Success, InteractionCommandID.RULE_TRIGGER) {
-        emoji = DiscordPartialEmoji(name = "✅", id = null)
+        emoji = DiscordPartialEmoji(name = config.acceptEmoji, id = null)
 
         perform {
             if (interaction.guildId != mainGuild.id) return@perform
             val response = interaction.deferEphemeralResponse()
 
             val member = interaction.user.asMember()
-            if (member.roleIds.contains(config.roles.playerID.toSnowflake)) {
-                member.removeRole(config.roles.playerID.toSnowflake)
+            if (member.roleIds.contains(config.acceptRole.snowflake)) {
+                member.removeRole(config.acceptRole.snowflake)
                 response.respond {
                     content = "Your player role was revoked!"
                 }
                 return@perform
             }
 
-            member.addRole(config.roles.playerID.toSnowflake)
+            member.addRole(config.acceptRole.snowflake)
             response.respond {
                 content = "The player role was added to you!"
             }
