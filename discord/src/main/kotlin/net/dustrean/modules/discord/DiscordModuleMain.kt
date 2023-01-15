@@ -5,6 +5,8 @@ package net.dustrean.modules.discord
 import dev.kord.cache.map.MapLikeCollection
 import dev.kord.cache.map.internal.MapEntryCache
 import dev.kord.cache.map.lruLinkedHashMap
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
@@ -136,6 +138,7 @@ class DiscordModuleMain : Module() {
     private suspend fun loadEditCommand() {
         kord.guilds.collect() {
             editCommands[it.id] = inputCommand("edit", it.id, "Edit discord bot configs") {
+                permissions = Permissions(Permission.All)
                 subCommand("mainguild", "Edit the main guild") {
                     string("id", "The id of the main guild") {
                         required = true
