@@ -4,6 +4,7 @@ import dev.kord.common.Color
 import dev.kord.common.entity.*
 import dev.kord.common.entity.optional.OptionalBoolean
 import dev.kord.common.entity.optional.optional
+import dev.kord.common.entity.optional.value
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.edit
@@ -109,7 +110,7 @@ object RulePart : DiscordModulePart() {
     }
 
     private fun ActionRowBuilder.acceptButton() = button(ButtonStyle.Success, InteractionCommandID.RULE_TRIGGER) {
-        emoji = config.acceptEmoji
+        emoji = DiscordPartialEmoji(config.acceptEmoji.id?.snowflake, config.acceptEmoji.name, OptionalBoolean.Value(config.acceptEmoji.animated))
 
         perform {
             if (interaction.guildId != mainGuild.id) return@perform
@@ -160,7 +161,7 @@ object RulePart : DiscordModulePart() {
                             val emoji = DiscordPartialEmoji(id?.snowflake, name, OptionalBoolean.Value(animated ?: false))
                             val rawEmoji = if(emoji.id != null) "<${if(emoji.animated == OptionalBoolean.Value(true)) "a" else ""}:${emoji.name}:${emoji.id}>" else emoji.name
                             ioScope.launch {
-                                config.acceptEmoji = emoji
+                                config.acceptEmoji = Emoji(emoji.id?.value?.toLong(), emoji.name, emoji.animated.asOptional.value ?: false)
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
