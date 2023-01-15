@@ -1,11 +1,14 @@
 package net.dustrean.modules.discord.part.impl.rule
 
 import dev.kord.common.Color
-import dev.kord.common.entity.ButtonStyle
-import dev.kord.common.entity.DiscordPartialEmoji
-import dev.kord.common.entity.Permission
+import dev.kord.common.entity.*
+import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.channel.edit
+import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.interaction.response.respond
+import dev.kord.core.entity.channel.*
+import dev.kord.core.event.channel.ChannelCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.component.ActionRowBuilder
@@ -33,6 +36,48 @@ object RulePart : DiscordModulePart() {
             config
         } else {
             configManager.getConfig("discord:modules:rule", RuleConfig::class.java)
+        }
+    }
+
+    private val channelCreate = kord.on<ChannelCreateEvent> {
+        val guildChannel = channel.asChannelOf<GuildChannel>()
+        if (guildChannel.guild != mainGuild) return@on
+        val ruleOverwrite = Overwrite(
+            config.acceptRole.snowflake,
+            OverwriteType.Role,
+            allow = Permissions(Permission.ViewChannel),
+            deny = Permissions()
+        )
+        val publicOverwrite = Overwrite(
+            mainGuild.everyoneRole.id,
+            OverwriteType.Role,
+            allow = Permissions(),
+            deny = Permissions(Permission.ViewChannel)
+        )
+        if (channel is TextChannel) {
+            mainGuild.getChannelOf<TextChannel>(channel.id).edit {
+                if (permissionOverwrites == null) permissionOverwrites = mutableSetOf()
+                permissionOverwrites!! += ruleOverwrite
+                permissionOverwrites!! += publicOverwrite
+            }
+        } else if (channel is VoiceChannel) {
+            mainGuild.getChannelOf<VoiceChannel>(channel.id).edit {
+                if (permissionOverwrites == null) permissionOverwrites = mutableSetOf()
+                permissionOverwrites!! += ruleOverwrite
+                permissionOverwrites!! += publicOverwrite
+            }
+        }else if(channel is NewsChannel) {
+            mainGuild.getChannelOf<NewsChannel>(channel.id).edit {
+                if (permissionOverwrites == null) permissionOverwrites = mutableSetOf()
+                permissionOverwrites!! += ruleOverwrite
+                permissionOverwrites!! += publicOverwrite
+            }
+        }else if(channel is StageChannel) {
+            mainGuild.getChannelOf<StageChannel>(channel.id).edit {
+                if (permissionOverwrites == null) permissionOverwrites = mutableSetOf()
+                permissionOverwrites!! += ruleOverwrite
+                permissionOverwrites!! += publicOverwrite
+            }
         }
     }
 
