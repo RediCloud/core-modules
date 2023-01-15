@@ -43,10 +43,10 @@ class InputCommandBuilder(
         kord.createGuildChatInputCommand(guildID, name, description) {
             defaultMemberPermissions = permissions
             subCommands.forEach { (name, description, builder) ->
-                this.subCommand(name, description) { builder() }
+                this@createGuildChatInputCommand.subCommand(name, description) { builder() }
             }
             groups.forEach { (name, description, builder) ->
-                this.group(name, description) { builder() }
+                this@createGuildChatInputCommand.group(name, description) { builder() }
             }
             chatInputBuilder()
         }

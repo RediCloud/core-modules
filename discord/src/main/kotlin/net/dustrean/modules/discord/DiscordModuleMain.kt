@@ -30,7 +30,6 @@ import net.dustrean.api.ICoreAPI
 import net.dustrean.api.module.Module
 import net.dustrean.modules.discord.data.DiscordConfig
 import net.dustrean.modules.discord.part.parts
-import net.dustrean.modules.discord.util.commands.CommandBuilder
 import net.dustrean.modules.discord.util.commands.InputCommandBuilder
 import net.dustrean.modules.discord.util.commands.inputCommand
 import net.dustrean.modules.discord.util.snowflake
@@ -136,7 +135,7 @@ class DiscordModuleMain : Module() {
     }
 
     private suspend fun loadEditCommand() {
-        kord.guilds.collect() {
+        kord.guilds.collect {
             editCommands[it.id] = inputCommand("edit", it.id, "Edit discord bot configs") {
                 permissions = Permissions(Permission.All)
                 subCommand("mainguild", "Edit the main guild") {
@@ -147,7 +146,7 @@ class DiscordModuleMain : Module() {
                         val id = this.interaction.command.strings["id"]!!
                         ioScope.launch {
                             val guild = kord.getGuildOrNull(id.snowflake)
-                            if(guild == null) {
+                            if (guild == null) {
                                 interaction.respondEphemeral {
                                     embed {
                                         title = "Guild not found"
@@ -161,12 +160,14 @@ class DiscordModuleMain : Module() {
                             interaction.respondEphemeral {
                                 embed {
                                     title = "Guild changed"
-                                    description = "The main guild was changed to ${guild.name} by ${interaction.user.asUser().mention}"
+                                    description =
+                                        "The main guild was changed to ${guild.name} by ${interaction.user.asUser().mention}"
                                 }
                             }
                         }
                     }
                 }
+
                 subCommand("teamguild", "Edit the team guild") {
                     string("id", "The id of the team guild") {
                         required = true
@@ -175,7 +176,7 @@ class DiscordModuleMain : Module() {
                         val id = this.interaction.command.strings["id"]!!
                         ioScope.launch {
                             val guild = kord.getGuildOrNull(id.snowflake)
-                            if(guild == null) {
+                            if (guild == null) {
                                 interaction.respondEphemeral {
                                     embed {
                                         title = "Guild not found"
@@ -189,12 +190,14 @@ class DiscordModuleMain : Module() {
                             logChannel.createMessage {
                                 embed {
                                     title = "Team guild changed"
-                                    description = "The team guild has been changed to ${guild.name} by ${interaction.user.asUser().mention}"
+                                    description =
+                                        "The team guild has been changed to ${guild.name} by ${interaction.user.asUser().mention}"
                                 }
                             }
                         }
                     }
                 }
+
                 subCommand("logchannel", "Edit the log channel") {
                     channel("channel", "The log channel") {
                         required = true
@@ -207,7 +210,8 @@ class DiscordModuleMain : Module() {
                                 logChannel.createMessage {
                                     embed {
                                         title = "Log channel changed"
-                                        description = "The log channel has been changed to ${channel.mention} by ${interaction.user.asUser().mention}"
+                                        description =
+                                            "The log channel has been changed to ${channel.mention} by ${interaction.user.asUser().mention}"
                                     }
                                 }
                             }
