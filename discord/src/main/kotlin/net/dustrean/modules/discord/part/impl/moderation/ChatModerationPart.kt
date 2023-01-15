@@ -114,4 +114,17 @@ class ChatModerationPart() : DiscordModulePart() {
         }
     }
 
+    private val logDeletes = kord.on<MessageDeleteEvent> {
+        if (!config.logDeletesInChannels.contains(messageId.value.toLong())) return@on
+        val logChannel = mainGuild.getChannelOrNull(config.logChannel.toSnowflake) ?: return@on
+
+        logChannel.asChannelOf<TextChannel>().createMessage {
+            embed {
+                title = "Message Deleted | DustreanNET"
+                color = Color(250, 0, 0)
+                description = "Message deleted in ${channel.mention}"
+            }
+        }
+    }
+
 }
