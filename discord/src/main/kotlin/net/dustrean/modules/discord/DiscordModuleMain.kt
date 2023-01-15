@@ -39,7 +39,7 @@ import net.dustrean.modules.discord.util.snowflake
 class DiscordModuleMain : Module() {
 
     companion object {
-        lateinit var editCommands: MutableMap<Snowflake, InputCommandBuilder>
+        var editCommands: MutableMap<Snowflake, InputCommandBuilder> = mutableMapOf()
     }
 
     override fun onLoad(api: ICoreAPI) = runBlocking {
