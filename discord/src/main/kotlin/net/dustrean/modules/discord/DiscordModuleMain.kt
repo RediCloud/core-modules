@@ -5,6 +5,7 @@ package net.dustrean.modules.discord
 import dev.kord.cache.map.MapLikeCollection
 import dev.kord.cache.map.internal.MapEntryCache
 import dev.kord.cache.map.lruLinkedHashMap
+import dev.kord.common.Color
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.PresenceStatus
@@ -150,19 +151,26 @@ class DiscordModuleMain : Module() {
                                 if (guild == null) {
                                     interaction.respondEphemeral {
                                         embed {
-                                            title = "Guild not found"
+                                            title = "Error | DustreanNET"
                                             description = "The guild with the id $id could not be found"
+                                            color = Color(255, 0, 0)
                                         }
                                     }
                                     return@launch
                                 }
                                 config.publicDiscordID = id
                                 configManager.saveConfig(config)
-                                interaction.respondEphemeral {
+                                logChannel.createMessage {
                                     embed {
-                                        title = "Guild changed"
+                                        title = "Info | DustreanNET"
                                         description =
                                             "The main guild was changed to ${guild.name} by ${interaction.user.asUser().mention}"
+                                    }
+                                }
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description = "The main guild was changed to ${guild.name}"
                                     }
                                 }
                             }
@@ -180,8 +188,9 @@ class DiscordModuleMain : Module() {
                                 if (guild == null) {
                                     interaction.respondEphemeral {
                                         embed {
-                                            title = "Guild not found"
+                                            title = "Error | DustreanNET"
                                             description = "The guild with the id $id could not be found"
+                                            color = Color(255, 0, 0)
                                         }
                                     }
                                     return@launch
@@ -190,9 +199,16 @@ class DiscordModuleMain : Module() {
                                 configManager.saveConfig(config)
                                 logChannel.createMessage {
                                     embed {
-                                        title = "Team guild changed"
+                                        title = "Info | DustreanNET"
                                         description =
                                             "The team guild has been changed to ${guild.name} by ${interaction.user.asUser().mention}"
+                                    }
+                                }
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description =
+                                            "The team guild was changed to ${guild.name} by ${interaction.user.asUser().mention}"
                                     }
                                 }
                             }
@@ -204,16 +220,20 @@ class DiscordModuleMain : Module() {
                             required = true
                         }
                         perform(this@group, this@subCommand) {
-                            val channel = this.interaction.command.channels["channel"]!!
                             ioScope.launch {
-                                ioScope.launch {
-                                    configManager.saveConfig(config)
-                                    logChannel.createMessage {
-                                        embed {
-                                            title = "Log channel changed"
-                                            description =
-                                                "The log channel has been changed to ${channel.mention} by ${interaction.user.asUser().mention}"
-                                        }
+                                val channel = interaction.command.channels["channel"]!!
+                                configManager.saveConfig(config)
+                                logChannel.createMessage {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description =
+                                            "The log channel has been changed to ${channel.mention} by ${interaction.user.asUser().mention}"
+                                    }
+                                }
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description = "The log channel has been changed to ${channel.mention}"
                                     }
                                 }
                             }
