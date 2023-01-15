@@ -42,7 +42,7 @@ object ModerationPart : DiscordModulePart() {
         } else {
             configManager.getConfig("discord:modules:moderation", ModerationConfig::class.java)
         }
-        loadEditCommand()
+        loadConfigCommand()
     }
 
     private val chatModeration = kord.on<MessageCreateEvent> {
@@ -167,8 +167,8 @@ object ModerationPart : DiscordModulePart() {
         }
     }
 
-    private fun loadEditCommand() {
-        DiscordModuleMain.editCommands.forEach { it ->
+    private fun loadConfigCommand() {
+        DiscordModuleMain.CONFIG_COMMANDS.forEach { it ->
             it.value.apply {
                 group("auto-chat-moderation", "Configure the auto chat moderation") {
                     subCommand("state", "Toggle auto chat moderation") {

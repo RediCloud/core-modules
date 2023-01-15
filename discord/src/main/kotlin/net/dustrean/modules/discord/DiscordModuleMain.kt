@@ -40,7 +40,7 @@ import net.dustrean.modules.discord.util.snowflake
 class DiscordModuleMain : Module() {
 
     companion object {
-        var editCommands: MutableMap<Snowflake, InputCommandBuilder> = mutableMapOf()
+        var CONFIG_COMMANDS: MutableMap<Snowflake, InputCommandBuilder> = mutableMapOf()
     }
 
     override fun onLoad(api: ICoreAPI) = runBlocking {
@@ -69,7 +69,7 @@ class DiscordModuleMain : Module() {
                     "Log channel not found"
                 )
 
-                loadEditCommand()
+                loadConfigCommand()
 
                 kord.editPresence {
                     status = PresenceStatus.Online
@@ -83,7 +83,7 @@ class DiscordModuleMain : Module() {
                     println("${it.name} enabled")
                 }
 
-                editCommands.forEach { it.value.create() }
+                CONFIG_COMMANDS.forEach { it.value.create() }
             }
 
             launch {
@@ -136,9 +136,9 @@ class DiscordModuleMain : Module() {
         }
     }
 
-    private suspend fun loadEditCommand() {
+    private suspend fun loadConfigCommand() {
         kord.guilds.collect {
-            editCommands[it.id] = inputCommand("edit", it.id, "Edit discord bot configs") {
+            CONFIG_COMMANDS[it.id] = inputCommand("config", it.id, "Edit discord bot configs") {
                 permissions = Permissions(Permission.All)
                 group("general", "General configurations for the bot") {
                     subCommand("mainguild", "Edit the main guild") {
