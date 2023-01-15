@@ -38,7 +38,6 @@ class ChatModerationPart() : DiscordModulePart() {
     }
 
     private val chatModeration = kord.on<MessageCreateEvent> {
-        if (message.getGuild() != mainGuild) return@on
         if (message.author?.isBot == true) return@on
         if (!config.chatModeration.contains(message.channelId.value.toLong())) return@on
 
@@ -85,7 +84,7 @@ class ChatModerationPart() : DiscordModulePart() {
     }
 
     private val logEdits = kord.on<MessageUpdateEvent> {
-
+        
     }
 
 }
