@@ -145,19 +145,38 @@ object RulePart : DiscordModulePart() {
             it.value.apply {
                 group("rules", "Configure the rule module") {
                     subCommand("emoji", "Set the emoji for the accept button") {
-                        string("id", "The emoji id for the accept button") {
-                            required = false
-                        }
-                        string("name", "The emoji name for the accept button") {
-                            required = false
-                        }
-                        boolean("animated", "Is the emoji animated?") {
+                        string("emoji", "The emoji id for the accept button") {
                             required = false
                         }
                         perform(this@group, this@subCommand) {
-                            val id = interaction.command.strings["id"]
-                            val name = interaction.command.strings["name"]
-                            val animated = interaction.command.booleans["animated"]
+                            val emojiMention = interaction.command.strings["emoji"]
+                            var id: Long? = null
+                            var name: String? = null
+                            var animated = false
+                            if (emojiMention != null) {
+                                if (emojiMention.startsWith("<a:")) {
+                                    animated = true
+                                    name = emojiMention.substring(3, emojiMention.length - 1).split(":")[0]
+                                    id = emojiMention.substring(3, emojiMention.length - 1).split(":")[1].toLong()
+                                } else if (emojiMention.startsWith("<:")) {
+                                    name = emojiMention.substring(2, emojiMention.length - 1).split(":")[0]
+                                    id = emojiMention.substring(2, emojiMention.length - 1).split(":")[1].toLong()
+                                } else if(emojiMention.startsWith(":") && emojiMention.endsWith(":")) {
+                                    name = emojiMention.substring(1, emojiMention.length - 1)
+                                } else {
+                                    ioScope.launch {
+                                        interaction.respondEphemeral {
+                                            embed {
+                                                title = "Error | DustreanNET"
+                                                description = "The emoji is invalid! ($emojiMention)"
+                                                color = Color(250, 0, 0)
+                                                useDefaultFooter(interaction.user)
+                                            }
+                                        }
+                                    }
+                                    return@perform
+                                }
+                            }
                             val emoji = DiscordPartialEmoji(id?.snowflake, name, OptionalBoolean.Value(animated ?: false))
                             val rawEmoji = if(emoji.id != null) "<${if(emoji.animated == OptionalBoolean.Value(true)) "a" else ""}:${emoji.name}:${emoji.id}>" else emoji.name
                             ioScope.launch {
