@@ -4,7 +4,7 @@ import net.dustrean.modules.discord.part.impl.moderation.ChatModerationPart
 import net.dustrean.modules.discord.part.impl.rule.RulePart
 import net.dustrean.modules.discord.util.commands.CommandBuilder
 
-val parts = listOf<DiscordModulePart>(RulePart, ChatModerationPart())
+val parts = listOf(RulePart, ChatModerationPart)
 
 abstract class DiscordModulePart {
     abstract val name: String

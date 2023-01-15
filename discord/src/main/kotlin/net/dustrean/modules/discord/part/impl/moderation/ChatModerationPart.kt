@@ -22,7 +22,7 @@ import net.dustrean.modules.discord.part.DiscordModulePart
 import net.dustrean.modules.discord.util.commands.CommandBuilder
 import net.dustrean.modules.discord.util.toSnowflake
 
-class ChatModerationPart() : DiscordModulePart() {
+object ChatModerationPart : DiscordModulePart() {
 
     override val name: String = "ChatModeration"
     override val commands: List<CommandBuilder> = listOf()
@@ -104,11 +104,11 @@ class ChatModerationPart() : DiscordModulePart() {
                 description = "Message edited in ${message.channel.mention} by ${message.asMessage().author?.mention}"
                 field {
                     name = "Old Content"
-                    value = oldMessage.content
+                    value = "```${oldMessage.content}```"
                 }
                 field {
                     name = "New Content"
-                    value = newMessage.content
+                    value = "```${newMessage.content}```"
                 }
             }
         }
@@ -122,7 +122,11 @@ class ChatModerationPart() : DiscordModulePart() {
             embed {
                 title = "Message Deleted | DustreanNET"
                 color = Color(250, 0, 0)
-                description = "Message deleted in ${channel.mention}"
+                description = "Message deleted in ${channel.mention} from ${message?.author?.mention}"
+                field {
+                    name = "Content"
+                    value = "```${message?.content}```"
+                }
             }
         }
     }
