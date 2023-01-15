@@ -62,6 +62,17 @@ object ModerationPart : DiscordModulePart() {
 
     private suspend fun flag(message: Message, violations: Set<String>) {
         if (violations.isEmpty()) return
+        logChannel.createMessage {
+            embed {
+                title = "Auto Moderation | DustreanNET"
+                description = "Message sent by ${message.author?.mention} in ${message.channel.asChannelOf<TextChannel>().mention} was flagged for the following reasons: ${violations.joinToString(", ")}"
+                color = Color(250, 0, 0)
+                field {
+                    name = "Message"
+                    value = message.content
+                }
+            }
+        }
         val author = message.author ?: return
         val dmChannel = author.getDmChannelOrNull() ?: return
         dmChannel.createMessage {
@@ -137,7 +148,7 @@ object ModerationPart : DiscordModulePart() {
     }
 
     private fun loadEditCommand() {
-        DiscordModuleMain.editCommands.forEach {
+        DiscordModuleMain.editCommands.forEach { it ->
             it.value.apply {
                 group("auto-chat-moderation", "Configure the auto chat moderation") {
                     subCommand("state", "Toggle auto chat moderation") {
@@ -261,10 +272,8 @@ object ModerationPart : DiscordModulePart() {
                                         }
                                         field {
                                             name = "Auto moderation channels"
-                                            value = "```${
-                                                config.chatModerationChannels.map { kord.getChannel(it.snowflake)?.mention }
-                                                    .joinToString { ", " }
-                                            }```"
+                                            value = config.chatModerationChannels.map { kord.getChannel(it.snowflake)?.mention }
+                                                .joinToString { ", " }
                                         }
                                     }
                                 }
@@ -390,7 +399,7 @@ object ModerationPart : DiscordModulePart() {
                                         }
                                         field {
                                             name = "Log message edits channels"
-                                            value = "```${config.logEditsInChannels.map { kord.getChannel(it.snowflake)?.mention }.joinToString { ", " }}```"
+                                            value = config.logEditsInChannels.map { kord.getChannel(it.snowflake)?.mention }.joinToString { ", " }
                                         }
                                     }
                                 }
@@ -509,10 +518,8 @@ object ModerationPart : DiscordModulePart() {
                                         }
                                         field {
                                             name = "Log message deletes channels"
-                                            value = "```${
-                                                config.logDeletesInChannels.map { kord.getChannel(it.snowflake)?.mention }
-                                                    .joinToString { ", " }
-                                            }```"
+                                            value = config.logDeletesInChannels.map { kord.getChannel(it.snowflake)?.mention }
+                                                .joinToString { ", " }
                                         }
                                     }
                                 }
