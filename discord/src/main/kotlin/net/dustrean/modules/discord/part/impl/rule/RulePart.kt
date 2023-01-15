@@ -146,6 +146,9 @@ object RulePart : DiscordModulePart() {
                 group("rules", "Configure the rule module") {
                     subCommand("emoji", "Set the emoji for the accept button") {
                         string("emoji", "The emoji id for the accept button") {
+                            required = true
+                        }
+                        boolean("force", "Force the bot to use the emoji if it's marked by the bot as invalid") {
                             required = false
                         }
                         perform(this@group, this@subCommand) {
@@ -153,6 +156,7 @@ object RulePart : DiscordModulePart() {
                             var id: Long? = null
                             var name: String? = null
                             var animated = false
+                            val force = interaction.command.booleans["force"] ?: false
                             if (emojiMention != null) {
                                 if (emojiMention.startsWith("<a:")) {
                                     animated = true
@@ -163,29 +167,30 @@ object RulePart : DiscordModulePart() {
                                     id = emojiMention.substring(2, emojiMention.length - 1).split(":")[1].toLong()
                                 } else if(emojiMention.startsWith(":") && emojiMention.endsWith(":")) {
                                     name = emojiMention.substring(1, emojiMention.length - 1)
-                                } else {
+                                } else if(!force){
                                     ioScope.launch {
                                         interaction.respondEphemeral {
                                             embed {
                                                 title = "Error | DustreanNET"
-                                                description = "The emoji is invalid! ($emojiMention)"
+                                                description = "The emoji is invalid! (`$emojiMention`)"
                                                 color = Color(250, 0, 0)
                                                 useDefaultFooter(interaction.user)
                                             }
                                         }
                                     }
                                     return@perform
+                                }else{
+                                    name = emojiMention
                                 }
                             }
                             val emoji = DiscordPartialEmoji(id?.snowflake, name, OptionalBoolean.Value(animated ?: false))
-                            val rawEmoji = if(emoji.id != null) "<${if(emoji.animated == OptionalBoolean.Value(true)) "a" else ""}:${emoji.name}:${emoji.id}>" else emoji.name
                             ioScope.launch {
                                 config.acceptEmoji = Emoji(emoji.id?.value?.toLong(), emoji.name, emoji.animated.asOptional.value ?: false)
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
                                         title = "Info | DustreanNET"
-                                        description = "The accept emoji was set to $rawEmoji"
+                                        description = "The accept emoji was set to $emojiMention"
                                         useDefaultFooter(interaction.user)
                                     }
                                 }
