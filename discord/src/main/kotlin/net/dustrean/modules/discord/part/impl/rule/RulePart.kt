@@ -45,6 +45,7 @@ object RulePart : DiscordModulePart() {
         } else {
             configManager.getConfig("discord:modules:rule", RuleConfig::class.java)
         }
+        loadConfigCommand()
     }
 
     private val channelCreate = kord.on<ChannelCreateEvent> {
