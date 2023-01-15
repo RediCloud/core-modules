@@ -138,80 +138,82 @@ class DiscordModuleMain : Module() {
         kord.guilds.collect {
             editCommands[it.id] = inputCommand("edit", it.id, "Edit discord bot configs") {
                 permissions = Permissions(Permission.All)
-                subCommand("mainguild", "Edit the main guild") {
-                    string("id", "The id of the main guild") {
-                        required = true
-                    }
-                    perform {
-                        val id = this.interaction.command.strings["id"]!!
-                        ioScope.launch {
-                            val guild = kord.getGuildOrNull(id.snowflake)
-                            if (guild == null) {
-                                interaction.respondEphemeral {
-                                    embed {
-                                        title = "Guild not found"
-                                        description = "The guild with the id $id could not be found"
-                                    }
-                                }
-                                return@launch
-                            }
-                            config.publicDiscordID = id
-                            configManager.saveConfig(config)
-                            interaction.respondEphemeral {
-                                embed {
-                                    title = "Guild changed"
-                                    description =
-                                        "The main guild was changed to ${guild.name} by ${interaction.user.asUser().mention}"
-                                }
-                            }
+                group("general", "General configurations for the bot") {
+                    subCommand("mainguild", "Edit the main guild") {
+                        string("id", "The id of the main guild") {
+                            required = true
                         }
-                    }
-                }
-
-                subCommand("teamguild", "Edit the team guild") {
-                    string("id", "The id of the team guild") {
-                        required = true
-                    }
-                    perform {
-                        val id = this.interaction.command.strings["id"]!!
-                        ioScope.launch {
-                            val guild = kord.getGuildOrNull(id.snowflake)
-                            if (guild == null) {
-                                interaction.respondEphemeral {
-                                    embed {
-                                        title = "Guild not found"
-                                        description = "The guild with the id $id could not be found"
-                                    }
-                                }
-                                return@launch
-                            }
-                            config.teamDiscordID = id
-                            configManager.saveConfig(config)
-                            logChannel.createMessage {
-                                embed {
-                                    title = "Team guild changed"
-                                    description =
-                                        "The team guild has been changed to ${guild.name} by ${interaction.user.asUser().mention}"
-                                }
-                            }
-                        }
-                    }
-                }
-
-                subCommand("logchannel", "Edit the log channel") {
-                    channel("channel", "The log channel") {
-                        required = true
-                    }
-                    perform {
-                        val channel = this.interaction.command.channels["channel"]!!
-                        ioScope.launch {
+                        perform {
+                            val id = this.interaction.command.strings["id"]!!
                             ioScope.launch {
+                                val guild = kord.getGuildOrNull(id.snowflake)
+                                if (guild == null) {
+                                    interaction.respondEphemeral {
+                                        embed {
+                                            title = "Guild not found"
+                                            description = "The guild with the id $id could not be found"
+                                        }
+                                    }
+                                    return@launch
+                                }
+                                config.publicDiscordID = id
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Guild changed"
+                                        description =
+                                            "The main guild was changed to ${guild.name} by ${interaction.user.asUser().mention}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    subCommand("teamguild", "Edit the team guild") {
+                        string("id", "The id of the team guild") {
+                            required = true
+                        }
+                        perform {
+                            val id = this.interaction.command.strings["id"]!!
+                            ioScope.launch {
+                                val guild = kord.getGuildOrNull(id.snowflake)
+                                if (guild == null) {
+                                    interaction.respondEphemeral {
+                                        embed {
+                                            title = "Guild not found"
+                                            description = "The guild with the id $id could not be found"
+                                        }
+                                    }
+                                    return@launch
+                                }
+                                config.teamDiscordID = id
                                 configManager.saveConfig(config)
                                 logChannel.createMessage {
                                     embed {
-                                        title = "Log channel changed"
+                                        title = "Team guild changed"
                                         description =
-                                            "The log channel has been changed to ${channel.mention} by ${interaction.user.asUser().mention}"
+                                            "The team guild has been changed to ${guild.name} by ${interaction.user.asUser().mention}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    subCommand("logchannel", "Edit the log channel") {
+                        channel("channel", "The log channel") {
+                            required = true
+                        }
+                        perform {
+                            val channel = this.interaction.command.channels["channel"]!!
+                            ioScope.launch {
+                                ioScope.launch {
+                                    configManager.saveConfig(config)
+                                    logChannel.createMessage {
+                                        embed {
+                                            title = "Log channel changed"
+                                            description =
+                                                "The log channel has been changed to ${channel.mention} by ${interaction.user.asUser().mention}"
+                                        }
                                     }
                                 }
                             }

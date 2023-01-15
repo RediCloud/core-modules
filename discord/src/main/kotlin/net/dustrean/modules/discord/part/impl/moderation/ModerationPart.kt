@@ -138,373 +138,371 @@ object ModerationPart : DiscordModulePart() {
     private fun loadEditCommand() {
         DiscordModuleMain.editCommands.forEach {
             it.value.apply {
-                subCommand("moderation", "Print the moderation config") {
+                group("auto-chat-moderation", "Configure the auto chat moderation") {
+                    subCommand("state", "Toggle auto chat moderation") {
+                        perform {
+                            ioScope.launch {
+                                config.autoModeration = !config.autoModeration
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Auto Chat Moderation | DustreanNET"
+                                        description =
+                                            "Auto chat moderation is now ${if (config.autoModeration) "enabled" else "disabled"}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    subCommand("add-new-channels", "Toggle if new channels should be moderated automatically") {
+                        perform {
+                            ioScope.launch {
+                                config.addNewChannelsToAutoModeration = !config.addNewChannelsToAutoModeration
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Auto Chat Moderation | DustreanNET"
+                                        description =
+                                            "Auto chat moderation for new channels is now ${if (config.addNewChannelsToAutoModeration) "enabled" else "disabled"}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    subCommand("other-bots", "Toggle if other bots should be moderated") {
+                        perform {
+                            ioScope.launch {
+                                config.moderateOtherBots = !config.moderateOtherBots
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Auto Chat Moderation | DustreanNET"
+                                        description =
+                                            "Auto chat moderation for other bots is now ${if (config.moderateOtherBots) "enabled" else "disabled"}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    subCommand("add", "Add a new channel to auto chat moderation") {
+                        channel("channel", "The channel to add") {
+                            required = true
+                        }
+                        perform {
+                            ioScope.launch {
+                                val channel = interaction.command.channels["channel"]!!
+                                if (config.chatModerationChannels.contains(channel.id.value.toLong())) {
+                                    interaction.respondEphemeral {
+                                        embed {
+                                            title = "Auto Chat Moderation | DustreanNET"
+                                            description = "Channel is already in auto chat moderation"
+                                        }
+                                    }
+                                    return@launch
+                                }
+                                config.chatModerationChannels.add(channel.id.value.toLong())
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Auto Chat Moderation | DustreanNET"
+                                        description = "Channel ${channel.mention} added to auto chat moderation"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    subCommand("remove", "Remove a channel from auto chat moderation") {
+                        channel("channel", "The channel to remove") {
+                            required = true
+                        }
+                        perform {
+                            ioScope.launch {
+                                val channel = interaction.command.channels["channel"]!!
+                                if (!config.chatModerationChannels.contains(channel.id.value.toLong())) {
+                                    interaction.respondEphemeral {
+                                        embed {
+                                            title = "Auto Chat Moderation | DustreanNET"
+                                            description = "Channel is not in auto chat moderation"
+                                        }
+                                    }
+                                    return@launch
+                                }
+                                config.chatModerationChannels.remove(channel.id.value.toLong())
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Auto Chat Moderation | DustreanNET"
+                                        description = "Channel ${channel.mention} removed from auto chat moderation"
+                                    }
+                                }
+                            }
+                        }
+                    }
                     perform {
                         ioScope.launch {
                             interaction.respondEphemeral {
                                 embed {
-                                    title = "Moderation Config | DustreanNET"
-                                    description = "Following types of moderation are available:\n- Auto Chat moderation\n- Log message edits\n- Log message deletes"
+                                    title = "Auto Chat Moderation | DustreanNET"
+                                    description =
+                                        "Auto chat moderation is a feature that automatically moderates messages in the specified channels."
+                                    field {
+                                        name = "Auto moderation (via OpenAI)"
+                                        value = "Enabled: ${config.autoModeration}"
+                                    }
+                                    field {
+                                        name = "Add new channels to auto moderation"
+                                        value = "Enabled: ${config.addNewChannelsToAutoModeration}"
+                                    }
+                                    field {
+                                        name = "Moderate other bots"
+                                        value = "Enabled: ${config.moderateOtherBots}"
+                                    }
+                                    field {
+                                        name = "Auto moderation channels"
+                                        value = "```${
+                                            config.chatModerationChannels.map { kord.getChannel(it.snowflake)?.mention }
+                                                .joinToString { ", " }
+                                        }```"
+                                    }
                                 }
                             }
                         }
                     }
-                    subCommand("auto-chat-moderation", "Configure the auto chat moderation"){
-                        subCommand("state", "Toggle auto chat moderation") {
-                            perform {
-                                ioScope.launch {
-                                    config.autoModeration = !config.autoModeration
-                                    configManager.saveConfig(config)
-                                    interaction.respondEphemeral {
-                                        embed {
-                                            title = "Auto Chat Moderation | DustreanNET"
-                                            description = "Auto chat moderation is now ${if (config.autoModeration) "enabled" else "disabled"}"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        subCommand("add-new-channels", "Toggle if new channels should be moderated automatically") {
-                            perform {
-                                ioScope.launch {
-                                    config.addNewChannelsToAutoModeration = !config.addNewChannelsToAutoModeration
-                                    configManager.saveConfig(config)
-                                    interaction.respondEphemeral {
-                                        embed {
-                                            title = "Auto Chat Moderation | DustreanNET"
-                                            description = "Auto chat moderation for new channels is now ${if (config.addNewChannelsToAutoModeration) "enabled" else "disabled"}"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        subCommand("other-bots", "Toggle if other bots should be moderated") {
-                            perform {
-                                ioScope.launch {
-                                    config.moderateOtherBots = !config.moderateOtherBots
-                                    configManager.saveConfig(config)
-                                    interaction.respondEphemeral {
-                                        embed {
-                                            title = "Auto Chat Moderation | DustreanNET"
-                                            description = "Auto chat moderation for other bots is now ${if (config.moderateOtherBots) "enabled" else "disabled"}"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        subCommand("add", "Add a new channel to auto chat moderation") {
-                            channel("channel", "The channel to add"){
-                                required = true
-                            }
-                            perform {
-                                ioScope.launch {
-                                    val channel = interaction.command.channels["channel"]!!
-                                    if (config.chatModerationChannels.contains(channel.id.value.toLong())) {
-                                        interaction.respondEphemeral {
-                                            embed {
-                                                title = "Auto Chat Moderation | DustreanNET"
-                                                description = "Channel is already in auto chat moderation"
-                                            }
-                                        }
-                                        return@launch
-                                    }
-                                    config.chatModerationChannels.add(channel.id.value.toLong())
-                                    configManager.saveConfig(config)
-                                    interaction.respondEphemeral {
-                                        embed {
-                                            title = "Auto Chat Moderation | DustreanNET"
-                                            description = "Channel ${channel.mention} added to auto chat moderation"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        subCommand("remove", "Remove a channel from auto chat moderation") {
-                            channel("channel", "The channel to remove"){
-                                required = true
-                            }
-                            perform {
-                                ioScope.launch {
-                                    val channel = interaction.command.channels["channel"]!!
-                                    if (!config.chatModerationChannels.contains(channel.id.value.toLong())) {
-                                        interaction.respondEphemeral {
-                                            embed {
-                                                title = "Auto Chat Moderation | DustreanNET"
-                                                description = "Channel is not in auto chat moderation"
-                                            }
-                                        }
-                                        return@launch
-                                    }
-                                    config.chatModerationChannels.remove(channel.id.value.toLong())
-                                    configManager.saveConfig(config)
-                                    interaction.respondEphemeral {
-                                        embed {
-                                            title = "Auto Chat Moderation | DustreanNET"
-                                            description = "Channel ${channel.mention} removed from auto chat moderation"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        perform {
-                            ioScope.launch {
-                                interaction.respondEphemeral {
-                                    embed {
-                                        title = "Auto Chat Moderation | DustreanNET"
-                                        description = "Auto chat moderation is a feature that automatically moderates messages in the specified channels."
-                                        field {
-                                            name = "Auto moderation (via OpenAI)"
-                                            value = "Enabled: ${config.autoModeration}"
-                                        }
-                                        field {
-                                            name = "Add new channels to auto moderation"
-                                            value = "Enabled: ${config.addNewChannelsToAutoModeration}"
-                                        }
-                                        field {
-                                            name = "Moderate other bots"
-                                            value = "Enabled: ${config.moderateOtherBots}"
-                                        }
-                                        field {
-                                            name = "Auto moderation channels"
-                                            value = "```${config.chatModerationChannels.map { kord.getChannel(it.snowflake)?.mention }.joinToString { ", " }}```"
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                }
 
-                    }
-                    subCommand("log-message-edits", "Configure the log message edits"){
-                        subCommand("state", "Toggle log message edits") {
-                            perform {
-                                ioScope.launch {
-                                    config.logEdits = !config.logEdits
-                                    configManager.saveConfig(config)
-                                    interaction.respondEphemeral {
-                                        embed {
-                                            title = "Log Message Edits | DustreanNET"
-                                            description = "Log message edits is now ${if (config.logEdits) "enabled" else "disabled"}"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        subCommand("add-new-channels", "Toggle if new channels should be logged automatically") {
-                            perform {
-                                ioScope.launch {
-                                    config.addNewChannelsToLogEdits = !config.addNewChannelsToLogEdits
-                                    configManager.saveConfig(config)
-                                    interaction.respondEphemeral {
-                                        embed {
-                                            title = "Log Message Edits | DustreanNET"
-                                            description = "Log message edits for new channels is now ${if (config.addNewChannelsToLogEdits) "enabled" else "disabled"}"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        subCommand("other-bots", "Toggle if other bots should be logged") {
-                            perform {
-                                ioScope.launch {
-                                    config.logBotEdits = !config.logBotEdits
-                                    configManager.saveConfig(config)
-                                    interaction.respondEphemeral {
-                                        embed {
-                                            title = "Log Message Edits | DustreanNET"
-                                            description = "Log message edits for other bots is now ${if (config.logBotEdits) "enabled" else "disabled"}"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        subCommand("add", "Add a new channel to log message edits") {
-                            channel("channel", "The channel to add"){
-                                required = true
-                            }
-                            perform {
-                                ioScope.launch {
-                                    val channel = interaction.command.channels["channel"]!!
-                                    if (config.logEditsInChannels.contains(channel.id.value.toLong())) {
-                                        interaction.respondEphemeral {
-                                            embed {
-                                                title = "Log Message Edits | DustreanNET"
-                                                description = "Channel is already in log message edits"
-                                            }
-                                        }
-                                        return@launch
-                                    }
-                                    config.logEditsInChannels.add(channel.id.value.toLong())
-                                    configManager.saveConfig(config)
-                                    interaction.respondEphemeral {
-                                        embed {
-                                            title = "Log Message Edits | DustreanNET"
-                                            description = "Channel ${channel.mention} added to log message edits"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        subCommand("remove", "Remove a channel from log message edits") {
-                            channel("channel", "The channel to remove"){
-                                required = true
-                            }
-                            perform {
-                                ioScope.launch {
-                                    val channel = interaction.command.channels["channel"]!!
-                                    if (!config.logEditsInChannels.contains(channel.id.value.toLong())) {
-                                        interaction.respondEphemeral {
-                                            embed {
-                                                title = "Log Message Edits | DustreanNET"
-                                                description = "Channel is not in log message edits"
-                                            }
-                                        }
-                                        return@launch
-                                    }
-                                    config.logEditsInChannels.remove(channel.id.value.toLong())
-                                    configManager.saveConfig(config)
-                                    interaction.respondEphemeral {
-                                        embed {
-                                            title = "Log Message Edits | DustreanNET"
-                                            description = "Channel ${channel.mention} removed from log message edits"
-                                        }
-                                    }
-                                }
-                            }
-                        }
+
+
+
+                group("log-message-edits", "Configure the log message edits"){
+                    subCommand("state", "Toggle log message edits") {
                         perform {
                             ioScope.launch {
+                                config.logEdits = !config.logEdits
+                                configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
                                         title = "Log Message Edits | DustreanNET"
-                                        description = "Log message edits is a feature that logs all message edits in the specified channels."
-                                        field {
-                                            name = "Log message edits"
-                                            value = "Enabled: ${config.logEdits}"
-                                        }
-                                        field {
-                                            name = "Log bot edits"
-                                            value = "Enabled: ${config.logBotEdits}"
-                                        }
-                                        field {
-                                            name = "Log message edits channels"
-                                            value = "```${config.logEditsInChannels.map { kord.getChannel(it.snowflake)?.mention }.joinToString { ", " }}```"
-                                        }
+                                        description = "Log message edits is now ${if (config.logEdits) "enabled" else "disabled"}"
                                     }
                                 }
                             }
                         }
                     }
-                    subCommand("log-message-deletes", "Configure the log message deletes"){
-                        subCommand("state", "Toggle log message deletes") {
-                            perform {
-                                ioScope.launch {
-                                    config.logDeletes = !config.logDeletes
-                                    configManager.saveConfig(config)
-                                    interaction.respondEphemeral {
-                                        embed {
-                                            title = "Log Message Deletes | DustreanNET"
-                                            description = "Log message deletes is now ${if (config.logDeletes) "enabled" else "disabled"}"
-                                        }
+                    subCommand("add-new-channels", "Toggle if new channels should be logged automatically") {
+                        perform {
+                            ioScope.launch {
+                                config.addNewChannelsToLogEdits = !config.addNewChannelsToLogEdits
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Log Message Edits | DustreanNET"
+                                        description = "Log message edits for new channels is now ${if (config.addNewChannelsToLogEdits) "enabled" else "disabled"}"
                                     }
                                 }
                             }
                         }
-                        subCommand("add-new-channels", "Toggle if new channels should be logged automatically") {
-                            perform {
-                                ioScope.launch {
-                                    config.addNewChannelsToDeletes = !config.addNewChannelsToDeletes
-                                    configManager.saveConfig(config)
-                                    interaction.respondEphemeral {
-                                        embed {
-                                            title = "Log Message Deletes | DustreanNET"
-                                            description = "Log message deletes for new channels is now ${if (config.addNewChannelsToDeletes) "enabled" else "disabled"}"
-                                        }
+                    }
+                    subCommand("other-bots", "Toggle if other bots should be logged") {
+                        perform {
+                            ioScope.launch {
+                                config.logBotEdits = !config.logBotEdits
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Log Message Edits | DustreanNET"
+                                        description = "Log message edits for other bots is now ${if (config.logBotEdits) "enabled" else "disabled"}"
                                     }
                                 }
                             }
                         }
-                        subCommand("other-bots", "Toggle if other bots should be logged") {
-                            perform {
-                                ioScope.launch {
-                                    config.logDeletes = !config.logDeletes
-                                    configManager.saveConfig(config)
-                                    interaction.respondEphemeral {
-                                        embed {
-                                            title = "Log Message Deletes | DustreanNET"
-                                            description = "Log message deletes for other bots is now ${if (config.logDeletes) "enabled" else "disabled"}"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        subCommand("add", "Add a new channel to log message deletes") {
-                            channel("channel", "The channel to add"){
-                                required = true
-                            }
-                            perform {
-                                ioScope.launch {
-                                    val channel = interaction.command.channels["channel"]!!
-                                    if (config.logDeletesInChannels.contains(channel.id.value.toLong())) {
-                                        interaction.respondEphemeral {
-                                            embed {
-                                                title = "Log Message Deletes | DustreanNET"
-                                                description = "Channel is already in log message deletes"
-                                            }
-                                        }
-                                        return@launch
-                                    }
-                                    config.logDeletesInChannels.add(channel.id.value.toLong())
-                                    configManager.saveConfig(config)
-                                    interaction.respondEphemeral {
-                                        embed {
-                                            title = "Log Message Deletes | DustreanNET"
-                                            description = "Channel ${channel.mention} added to log message deletes"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        subCommand("remove", "Remove a channel from log message deletes") {
-                            channel("channel", "The channel to remove"){
-                                required = true
-                            }
-                            perform {
-                                ioScope.launch {
-                                    val channel = interaction.command.channels["channel"]!!
-                                    if (!config.logDeletesInChannels.contains(channel.id.value.toLong())) {
-                                        interaction.respondEphemeral {
-                                            embed {
-                                                title = "Log Message Deletes | DustreanNET"
-                                                description = "Channel is not in log message deletes"
-                                            }
-                                        }
-                                        return@launch
-                                    }
-                                    config.logDeletesInChannels.remove(channel.id.value.toLong())
-                                    configManager.saveConfig(config)
-                                    interaction.respondEphemeral {
-                                        embed {
-                                            title = "Log Message Deletes | DustreanNET"
-                                            description = "Channel ${channel.mention} removed from log message deletes"
-                                        }
-                                    }
-                                }
-                            }
+                    }
+                    subCommand("add", "Add a new channel to log message edits") {
+                        channel("channel", "The channel to add"){
+                            required = true
                         }
                         perform {
                             ioScope.launch {
+                                val channel = interaction.command.channels["channel"]!!
+                                if (config.logEditsInChannels.contains(channel.id.value.toLong())) {
+                                    interaction.respondEphemeral {
+                                        embed {
+                                            title = "Log Message Edits | DustreanNET"
+                                            description = "Channel is already in log message edits"
+                                        }
+                                    }
+                                    return@launch
+                                }
+                                config.logEditsInChannels.add(channel.id.value.toLong())
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Log Message Edits | DustreanNET"
+                                        description = "Channel ${channel.mention} added to log message edits"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    subCommand("remove", "Remove a channel from log message edits") {
+                        channel("channel", "The channel to remove"){
+                            required = true
+                        }
+                        perform {
+                            ioScope.launch {
+                                val channel = interaction.command.channels["channel"]!!
+                                if (!config.logEditsInChannels.contains(channel.id.value.toLong())) {
+                                    interaction.respondEphemeral {
+                                        embed {
+                                            title = "Log Message Edits | DustreanNET"
+                                            description = "Channel is not in log message edits"
+                                        }
+                                    }
+                                    return@launch
+                                }
+                                config.logEditsInChannels.remove(channel.id.value.toLong())
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Log Message Edits | DustreanNET"
+                                        description = "Channel ${channel.mention} removed from log message edits"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    perform {
+                        ioScope.launch {
+                            interaction.respondEphemeral {
+                                embed {
+                                    title = "Log Message Edits | DustreanNET"
+                                    description = "Log message edits is a feature that logs all message edits in the specified channels."
+                                    field {
+                                        name = "Log message edits"
+                                        value = "Enabled: ${config.logEdits}"
+                                    }
+                                    field {
+                                        name = "Log bot edits"
+                                        value = "Enabled: ${config.logBotEdits}"
+                                    }
+                                    field {
+                                        name = "Log message edits channels"
+                                        value = "```${config.logEditsInChannels.map { kord.getChannel(it.snowflake)?.mention }.joinToString { ", " }}```"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                group("log-message-deletes", "Configure the log message deletes"){
+                    subCommand("state", "Toggle log message deletes") {
+                        perform {
+                            ioScope.launch {
+                                config.logDeletes = !config.logDeletes
+                                configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
                                         title = "Log Message Deletes | DustreanNET"
-                                        description = "Log message deletes is a feature that logs all message deletes in the specified channels."
-                                        field {
-                                            name = "Log message deletes"
-                                            value = "Enabled: ${config.logDeletes}"
+                                        description = "Log message deletes is now ${if (config.logDeletes) "enabled" else "disabled"}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    subCommand("add-new-channels", "Toggle if new channels should be logged automatically") {
+                        perform {
+                            ioScope.launch {
+                                config.addNewChannelsToDeletes = !config.addNewChannelsToDeletes
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Log Message Deletes | DustreanNET"
+                                        description = "Log message deletes for new channels is now ${if (config.addNewChannelsToDeletes) "enabled" else "disabled"}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    subCommand("other-bots", "Toggle if other bots should be logged") {
+                        perform {
+                            ioScope.launch {
+                                config.logDeletes = !config.logDeletes
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Log Message Deletes | DustreanNET"
+                                        description = "Log message deletes for other bots is now ${if (config.logDeletes) "enabled" else "disabled"}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    subCommand("add", "Add a new channel to log message deletes") {
+                        channel("channel", "The channel to add"){
+                            required = true
+                        }
+                        perform {
+                            ioScope.launch {
+                                val channel = interaction.command.channels["channel"]!!
+                                if (config.logDeletesInChannels.contains(channel.id.value.toLong())) {
+                                    interaction.respondEphemeral {
+                                        embed {
+                                            title = "Log Message Deletes | DustreanNET"
+                                            description = "Channel is already in log message deletes"
                                         }
-                                        field {
-                                            name = "Log message deletes channels"
-                                            value = "```${config.logDeletesInChannels.map { kord.getChannel(it.snowflake)?.mention }.joinToString { ", " }}```"
+                                    }
+                                    return@launch
+                                }
+                                config.logDeletesInChannels.add(channel.id.value.toLong())
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Log Message Deletes | DustreanNET"
+                                        description = "Channel ${channel.mention} added to log message deletes"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    subCommand("remove", "Remove a channel from log message deletes") {
+                        channel("channel", "The channel to remove"){
+                            required = true
+                        }
+                        perform {
+                            ioScope.launch {
+                                val channel = interaction.command.channels["channel"]!!
+                                if (!config.logDeletesInChannels.contains(channel.id.value.toLong())) {
+                                    interaction.respondEphemeral {
+                                        embed {
+                                            title = "Log Message Deletes | DustreanNET"
+                                            description = "Channel is not in log message deletes"
                                         }
+                                    }
+                                    return@launch
+                                }
+                                config.logDeletesInChannels.remove(channel.id.value.toLong())
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Log Message Deletes | DustreanNET"
+                                        description = "Channel ${channel.mention} removed from log message deletes"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    perform {
+                        ioScope.launch {
+                            interaction.respondEphemeral {
+                                embed {
+                                    title = "Log Message Deletes | DustreanNET"
+                                    description = "Log message deletes is a feature that logs all message deletes in the specified channels."
+                                    field {
+                                        name = "Log message deletes"
+                                        value = "Enabled: ${config.logDeletes}"
+                                    }
+                                    field {
+                                        name = "Log message deletes channels"
+                                        value = "```${config.logDeletesInChannels.map { kord.getChannel(it.snowflake)?.mention }.joinToString { ", " }}```"
                                     }
                                 }
                             }
