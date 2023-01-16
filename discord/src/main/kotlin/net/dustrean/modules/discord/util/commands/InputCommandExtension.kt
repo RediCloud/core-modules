@@ -8,6 +8,23 @@ import dev.kord.rest.builder.interaction.*
 import kotlinx.coroutines.Job
 import net.dustrean.modules.discord.kord
 
+private val listener = kord.on<GuildChatInputCommandInteractionCreateEvent> {
+    commands.forEach {
+        if (interaction.command.rootName != it.name) return@on
+        val data = interaction.command.data
+        val options = data.options.value
+        options?.forEach{ optionData ->
+            val groupName = optionData.name
+            if (optionData.subCommands.value == null || optionData.subCommands.value!!.isEmpty()) return@on
+            val subCommandName = optionData.subCommands.value!![0].name
+            val perform = it.actions["${groupName}_${subCommandName}"] ?: return@on
+            perform(this)
+            return@on
+        }
+    }
+}
+private val commands = mutableListOf<InputCommandBuilder>()
+
 /**
  * @param name The name which is displayed when performing the command
  * @param guildID The guild where the command should be work
@@ -18,6 +35,10 @@ class InputCommandBuilder(
     override val name: String, override val guildID: Snowflake, private val description: String
 ) : CommandBuilder {
 
+    init {
+        commands += this
+    }
+
     override var permissions = Permissions()
     var chatInputBuilder: suspend ChatInputCreateBuilder.() -> Unit = { }
     var subCommands =
@@ -26,19 +47,6 @@ class InputCommandBuilder(
         mutableListOf<Triple<String, String, suspend GroupCommandBuilder.() -> Unit>>()
     var actions =
         mutableMapOf<String, ((GuildChatInputCommandInteractionCreateEvent) -> Unit)?>()
-    private val listener = kord.on<GuildChatInputCommandInteractionCreateEvent> {
-        if (interaction.command.rootName != name) return@on
-        val data = interaction.command.data
-        val options = data.options.value
-        options?.forEach { optionData ->
-            val groupName = optionData.name
-            if (optionData.subCommands.value == null || optionData.subCommands.value!!.isEmpty()) return@on
-            val subCommandName = optionData.subCommands.value!![0].name
-            val perform = actions["${groupName}_${subCommandName}"] ?: return@on
-            perform(this)
-            return@forEach
-        }
-    }
 
     @CommandAnnotations.BuildLevel.RunsDsl
     fun perform(groupContext: GroupCommandBuilder? = null, context: SubCommandBuilder, event: GuildChatInputCommandInteractionCreateEvent.() -> Unit) {
