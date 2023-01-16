@@ -95,9 +95,7 @@ object RulePart : DiscordModulePart() {
 
         var rule = false
         config.acceptMessages.forEach {
-            println("it: $it")
             interaction.message.let { message ->
-                println("message: $message")
                 if (message.id.value.toLong() == it) {
                     rule = true
                 }
