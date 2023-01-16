@@ -3,8 +3,6 @@ package net.dustrean.modules.discord.part.impl.rule
 import dev.kord.common.Color
 import dev.kord.common.entity.*
 import dev.kord.common.entity.optional.OptionalBoolean
-import dev.kord.common.entity.optional.optional
-import dev.kord.common.entity.optional.value
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.edit
@@ -13,23 +11,24 @@ import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.channel.*
 import dev.kord.core.event.channel.ChannelCreateEvent
-import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.core.event.interaction.GuildButtonInteractionCreateEvent
+import dev.kord.core.event.message.MessageDeleteEvent
 import dev.kord.core.on
-import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.interaction.boolean
+import dev.kord.rest.builder.interaction.channel
 import dev.kord.rest.builder.interaction.role
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.message.create.actionRow
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import kotlinx.coroutines.launch
+import net.dustrean.api.ICoreAPI
 import net.dustrean.modules.discord.*
 import net.dustrean.modules.discord.part.DiscordModulePart
 import net.dustrean.modules.discord.util.commands.CommandBuilder
 import net.dustrean.modules.discord.util.interactions.InteractionCommandID
 import net.dustrean.modules.discord.util.interactions.button
 import net.dustrean.modules.discord.util.message.useDefaultFooter
-import net.dustrean.modules.discord.util.message.userFooter
 import net.dustrean.modules.discord.util.snowflake
 
 object RulePart : DiscordModulePart() {
@@ -76,13 +75,13 @@ object RulePart : DiscordModulePart() {
                 permissionOverwrites!! += ruleOverwrite
                 permissionOverwrites!! += publicOverwrite
             }
-        }else if(channel is NewsChannel) {
+        } else if (channel is NewsChannel) {
             mainGuild.getChannelOf<NewsChannel>(channel.id).edit {
                 if (permissionOverwrites == null) permissionOverwrites = mutableSetOf()
                 permissionOverwrites!! += ruleOverwrite
                 permissionOverwrites!! += publicOverwrite
             }
-        }else if(channel is StageChannel) {
+        } else if (channel is StageChannel) {
             mainGuild.getChannelOf<StageChannel>(channel.id).edit {
                 if (permissionOverwrites == null) permissionOverwrites = mutableSetOf()
                 permissionOverwrites!! += ruleOverwrite
@@ -91,56 +90,69 @@ object RulePart : DiscordModulePart() {
         }
     }
 
-    private val ruleMessageHandler = kord.on<MessageCreateEvent> {
-        if (message.content != "!rules") return@on
-        if (member == null) return@on
-        if (!member!!.getPermissions().contains(Permission.ManageMessages)) return@on
+    private val ruleMessageInteraction = kord.on<GuildButtonInteractionCreateEvent> {
+        if (interaction.guildId != mainGuild.id) return@on
 
-        message.channel.createMessage {
-            config.ruleMessages.forEach { rule ->
-                embed {
-                    color = Color(rule.color)
-                    title = rule.title
-                    description = rule.description
+        var rule = false
+        config.acceptMessages.forEach {
+            println("it: $it")
+            interaction.message.let { message ->
+                println("message: $message")
+                if (message.id.value.toLong() == it) {
+                    rule = true
                 }
             }
-
-            actionRow { acceptButton() }
         }
-    }
+        if (!rule) return@on
+        val response = interaction.deferEphemeralResponse()
 
-    private fun ActionRowBuilder.acceptButton() = button(ButtonStyle.Success, InteractionCommandID.RULE_TRIGGER) {
-        emoji = DiscordPartialEmoji(config.acceptEmoji.id?.snowflake, config.acceptEmoji.name, OptionalBoolean.Value(config.acceptEmoji.animated))
-
-        perform {
-            if (interaction.guildId != mainGuild.id) return@perform
-            val response = interaction.deferEphemeralResponse()
-
-            val member = interaction.user.asMember()
-            if (member.roleIds.contains(config.acceptRole.snowflake)) {
-                member.removeRole(config.acceptRole.snowflake)
-                response.respond {
-                    embed {
-                        title = "Rules | DustreanNET"
-                        description = "Your player role was revoked!"
-                        useDefaultFooter(interaction.user)
-                    }
-                }
-                return@perform
-            }
-
-            member.addRole(config.acceptRole.snowflake)
+        val member = interaction.user.asMember()
+        if (member.roleIds.contains(config.acceptRole.snowflake)) {
+            member.removeRole(config.acceptRole.snowflake)
             response.respond {
                 embed {
                     title = "Rules | DustreanNET"
-                    description = "The player role was added to you!"
+                    description = "Your player role was revoked!"
                     useDefaultFooter(interaction.user)
                 }
+            }
+            return@on
+        }
+
+        var existsRole = false
+        member.getGuild().roleIds.forEach { if (it == config.acceptRole.snowflake) existsRole = true }
+
+        if (!existsRole) {
+            response.respond {
+                embed {
+                    title = "Error | DustreanNET"
+                    description = "The role does not exist! Please contact an administrator!"
+                    color = Color(250, 0, 0)
+                    useDefaultFooter(interaction.user)
+                }
+            }
+            return@on
+        }
+
+        member.addRole(config.acceptRole.snowflake)
+        response.respond {
+            embed {
+                title = "Rules | DustreanNET"
+                description = "The player role was added to you!"
+                useDefaultFooter(interaction.user)
             }
         }
     }
 
-    private fun loadConfigCommand(){
+    private val ruleMessageDelete = kord.on<MessageDeleteEvent> {
+        val id = messageId.value.toLong()
+        if (config.acceptMessages.any { it == id }) {
+            config.acceptMessages.remove(id)
+            ICoreAPI.INSTANCE.getConfigManager().saveConfig(config)
+        }
+    }
+
+    private fun loadConfigCommand() {
         DiscordModuleMain.CONFIG_COMMANDS.forEach {
             it.value.apply {
                 group("rules", "Configure the rule module") {
@@ -165,9 +177,9 @@ object RulePart : DiscordModulePart() {
                                 } else if (emojiMention.startsWith("<:")) {
                                     name = emojiMention.substring(2, emojiMention.length - 1).split(":")[0]
                                     id = emojiMention.substring(2, emojiMention.length - 1).split(":")[1].toLong()
-                                } else if(emojiMention.startsWith(":") && emojiMention.endsWith(":")) {
+                                } else if (emojiMention.startsWith(":") && emojiMention.endsWith(":")) {
                                     name = emojiMention.substring(1, emojiMention.length - 1)
-                                } else if(!force){
+                                } else if (!force) {
                                     ioScope.launch {
                                         interaction.respondEphemeral {
                                             embed {
@@ -179,13 +191,16 @@ object RulePart : DiscordModulePart() {
                                         }
                                     }
                                     return@perform
-                                }else{
+                                } else {
                                     name = emojiMention
                                 }
                             }
-                            val emoji = DiscordPartialEmoji(id?.snowflake, name, OptionalBoolean.Value(animated ?: false))
+                            val emoji =
+                                DiscordPartialEmoji(id?.snowflake, name, OptionalBoolean.Value(animated ?: false))
                             ioScope.launch {
-                                config.acceptEmoji = Emoji(emoji.id?.value?.toLong(), emoji.name, emoji.animated.asOptional.value ?: false)
+                                config.acceptEmoji = Emoji(
+                                    emoji.id?.value?.toLong(), emoji.name, emoji.animated.asOptional.value ?: false
+                                )
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
@@ -211,6 +226,47 @@ object RulePart : DiscordModulePart() {
                                         title = "Info | DustreanNET"
                                         description = "The accept role was set to ${role.mention}"
                                         useDefaultFooter(interaction.user)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    subCommand("create", "Create the rule message") {
+                        channel("channel", "The channel where the message should be created") {
+                            required = false
+                        }
+                        perform(this@group, this@subCommand) {
+                            ioScope.launch {
+                                val channelBehavior = interaction.command.channels["channel"] ?: interaction.channel
+                                channelBehavior.asChannelOf<GuildMessageChannel>().createMessage {
+                                    config.ruleMessages.forEach { rule ->
+                                        embed {
+                                            color = Color(rule.color)
+                                            title = rule.title
+                                            description = rule.description
+                                        }
+                                    }
+                                    actionRow {
+                                        button(ButtonStyle.Success, InteractionCommandID.RULE_TRIGGER) {
+                                            emoji = DiscordPartialEmoji(
+                                                config.acceptEmoji.id?.snowflake,
+                                                config.acceptEmoji.name,
+                                                OptionalBoolean.Value(config.acceptEmoji.animated)
+                                            )
+                                        }
+                                    }
+                                }.apply {
+                                    config.acceptMessages.add(id.value.toLong())
+                                    configManager.saveConfig(config)
+
+                                    ioScope.launch {
+                                        this@perform.interaction.respondEphemeral {
+                                            embed {
+                                                title = "Info | DustreanNET"
+                                                description = "Rule message created in ${channelBehavior.mention}"
+                                                useDefaultFooter(this@perform.interaction.user)
+                                            }
+                                        }
                                     }
                                 }
                             }

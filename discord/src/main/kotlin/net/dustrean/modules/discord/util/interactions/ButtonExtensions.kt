@@ -11,12 +11,6 @@ class InteractionButtonBuilder(val customID: String?) {
     var label: String? = null
     var emoji: DiscordPartialEmoji? = null
     var disabled: Boolean = false
-
-    inline fun perform(crossinline callback: suspend GuildButtonInteractionCreateEvent.() -> Unit) =
-        kord.on<GuildButtonInteractionCreateEvent> {
-            if (interaction.component.customId != customID) return@on
-            callback()
-        }
 }
 
 inline fun ActionRowBuilder.button(
