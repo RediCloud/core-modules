@@ -91,7 +91,6 @@ object RulePart : DiscordModulePart() {
     }
 
     private val ruleMessageInteraction = kord.on<GuildButtonInteractionCreateEvent> {
-        if (interaction.guildId != mainGuild.id) return@on
 
         var rule = false
         config.acceptMessages.forEach {
@@ -253,8 +252,8 @@ object RulePart : DiscordModulePart() {
                                             )
                                         }
                                     }
-                                }.apply {
-                                    config.acceptMessages.add(id.value.toLong())
+                                }.also {
+                                    config.acceptMessages.add(it.id.value.toLong())
                                     configManager.saveConfig(config)
 
                                     ioScope.launch {
