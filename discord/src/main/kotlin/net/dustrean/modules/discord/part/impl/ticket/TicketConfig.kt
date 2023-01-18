@@ -2,11 +2,14 @@ package net.dustrean.modules.discord.part.impl.ticket
 
 import dev.kord.core.entity.User
 import net.dustrean.modules.discord.data.AbstractDiscordConfig
+import net.dustrean.modules.discord.data.Emoji
+import net.dustrean.modules.discord.data.embed
+import net.dustrean.modules.discord.data.messages
 import kotlin.time.Duration.Companion.days
 
 class TicketConfig() : AbstractDiscordConfig() {
 
-    override val key = "discord:module:ticket"
+    override val key = "discord:modules:ticket"
     var openMessages = mutableListOf<Long>()
     var category = 1064653389063012532L
     var archiveChannel = 1064653495925473371L
@@ -17,15 +20,44 @@ class TicketConfig() : AbstractDiscordConfig() {
     var count = 0
     var tagAfterNoResponse = 3.days.inWholeMilliseconds
     var closeAfterNoResponse = 7.days.inWholeMilliseconds
-    var openEmoji: Emoji = Emoji(null, "✅")
+    var openEmoji = Emoji(null, "✅")
+    var closeEmoji = Emoji(null, "❌")
+    var confirmEmoji = Emoji(null, "✅")
     var maxOpenTicketsPerUser = 1
-    var ticketWelcomeMessage = Embed(
-        title = "Welcome to your ticket!",
-        description = "Hi {user},\nwelcome to your ticket!",
-        fields = mutableListOf<EmbedField>().apply {
-            add(EmbedField("No interaction", "Your ticket will be archived after 7 days of inactivity. You will be notified after 3 days of inactivity."))
+    var closeConfirmMessage = messages {
+        embed {
+            title = "Confirm | DustreanNET"
+            description = "Are you sure you want to close this ticket?"
+            color = intArrayOf(250, 0, 0)
         }
-    )
+    }
+    var ticketWelcomeMessage = messages {
+        embed {
+            title = "Welcome | DustreanNET"
+            description = "Welcome {user},\n" +
+                    "we are glad that you have reached out to us :wave:\n" +
+                    "\n" +
+                    ":clock1: **Inactivity**\n" +
+                    "Please note that tickets will be closed after 7 days of inactivity, but you will receive a reminder after 3 days of inactivity.\n" +
+                    "\n" +
+                    ":point_right: **Interactions**\n" +
+                    "- close the ticket with `/ticket close` or use the {close_emoji} reaction\n" +
+                    "- add a user to this ticket with `/ticket add @user`\n" +
+                    "\n" +
+                    ":warning: Important\n" +
+                    "Please do not ping any team members! They will respond as soon as they can.\n" +
+                    "\n" +
+                    "\n" +
+                    "When you understand this, please react with the {confirm_emoji} emoji to confirm that you have read this message."
+        }
+    }
+    var confirmMessage = messages {
+        embed {
+            title = "Confirmed | DustreanNET"
+            description = "Your ticket has been confirmed! Please explain your issue in detail! A staff member will contact you as soon as possible!"
+            defaultDesign = true
+        }
+    }
 
 }
 
