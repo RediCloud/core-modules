@@ -2,9 +2,14 @@ package net.dustrean.modules.discord.part
 
 import net.dustrean.modules.discord.part.impl.moderation.ModerationPart
 import net.dustrean.modules.discord.part.impl.rule.RulePart
+import net.dustrean.modules.discord.part.impl.ticket.TicketPart
 import net.dustrean.modules.discord.util.commands.CommandBuilder
 
-val parts = listOf(RulePart, ModerationPart)
+val parts = listOf(RulePart, ModerationPart, TicketPart)
+
+fun isLoaded(clazz: Class<out DiscordModulePart>): Boolean {
+    return parts.any { it::class.java == clazz }
+}
 
 abstract class DiscordModulePart {
 
