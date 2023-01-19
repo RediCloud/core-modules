@@ -45,7 +45,7 @@ data class Embed(
     var defaultDesign: Boolean = true,
     val fields: MutableList<EmbedField> = mutableListOf()
 )
-fun Embed.build(user: User?): EmbedBuilder {
+suspend fun Embed.build(user: User?): EmbedBuilder {
     val builder = EmbedBuilder()
     builder.title = title
     builder.description = description

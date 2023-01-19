@@ -10,7 +10,7 @@ fun EmbedBuilder.userFooter(user: User, format: String? = null) = footer {
     text = format?.replace("%username", user.username)?.replace("%tag", user.discriminator) ?: user.username
 }
 
-fun EmbedBuilder.useDefaultDesign(user: User?) {
+suspend fun EmbedBuilder.useDefaultDesign(user: User?) {
     useDefaultFooter(user)
     useDefaultColor()
 }
@@ -19,9 +19,9 @@ fun EmbedBuilder.useDefaultColor() {
     color = Color(135,97,56)
 }
 
-fun EmbedBuilder.useDefaultFooter(user: User?) = footer {
+suspend fun EmbedBuilder.useDefaultFooter(user: User?) = footer {
     if (user == null) {
-        text = "DustreanNET • Requested by Unknown"
+        text = "DustreanNET • Requested by ${kord.getSelf().username}"
         return@footer
     }
     icon = user.avatar?.url
