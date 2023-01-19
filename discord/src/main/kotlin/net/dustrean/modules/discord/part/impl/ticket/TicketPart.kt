@@ -2,19 +2,26 @@ package net.dustrean.modules.discord.part.impl.ticket
 
 import dev.kord.common.Color
 import dev.kord.common.entity.*
-import dev.kord.core.behavior.channel.*
+import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.channel.edit
+import dev.kord.core.behavior.channel.editRolePermission
 import dev.kord.core.behavior.createTextChannel
 import dev.kord.core.behavior.interaction.ActionInteractionBehavior
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.User
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.event.guild.MemberLeaveEvent
 import dev.kord.core.event.interaction.GuildButtonInteractionCreateEvent
+import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.interaction.channel
 import dev.kord.rest.builder.message.create.actionRow
 import dev.kord.rest.builder.message.create.embed
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.dustrean.api.ICoreAPI
 import net.dustrean.api.utils.extension.ExternalRMap
@@ -28,15 +35,18 @@ import net.dustrean.modules.discord.kord
 import net.dustrean.modules.discord.mainGuild
 import net.dustrean.modules.discord.part.DiscordModulePart
 import net.dustrean.modules.discord.util.commands.CommandBuilder
+import net.dustrean.modules.discord.util.commands.inputCommand
 import net.dustrean.modules.discord.util.interactions.button
 import net.dustrean.modules.discord.util.message.useDefaultDesign
 import net.dustrean.modules.discord.util.snowflake
-import java.util.UUID
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 object TicketPart : DiscordModulePart() {
 
     override val name = "Ticket"
-    override val commands: List<CommandBuilder> = mutableListOf()
     val tickets: ExternalRMap<UUID, Ticket> =
         ICoreAPI.INSTANCE.getRedisConnection().getRedissonClient().getExternalMap("module-data:discord:ticket:tickets")
     lateinit var config: TicketConfig
@@ -49,6 +59,48 @@ object TicketPart : DiscordModulePart() {
             ICoreAPI.INSTANCE.getConfigManager().createConfig(config)
         }
         loadConfigCommand()
+        startScheduler()
+    }
+
+    private fun startScheduler() {
+        ioScope.launch {
+            repeat(100_000) {
+                tickets.values.forEach {
+                    if (!it.isOpen()) {
+                        if (it.getArchiveTime() + config.deleteAfterArchive <= System.currentTimeMillis()) {
+                            //TODO: save conversion messages
+                            it.stateHistory[System.currentTimeMillis()] =
+                                TicketState.DELETED to kord.selfId.value.toLong()
+                            it.update()
+                            val channel = mainGuild.getChannelOrNull(it.channelId.snowflake)
+                            if (channel != null) {
+                                channel.delete()
+                            }
+                        }
+                        return@forEach
+                    }
+                    val channel = mainGuild.getChannelOrNull(it.channelId.snowflake)
+                    if (channel == null) {
+                        it.stateHistory[System.currentTimeMillis()] = TicketState.CLOSED to kord.selfId.value.toLong()
+                        it.update()
+                        return@forEach
+                    }
+                    val messageChannel = channel.asChannelOf<GuildMessageChannel>()
+                    if (it.lastUserMessage + config.tagAfterNoResponse > System.currentTimeMillis() && !it.inactivityNotify) {
+                        messageChannel.createMessage(config.inactivityNotifyMessages)
+                        it.inactivityNotify = true
+                        it.update()
+                        return@forEach
+                    }
+                    if (it.lastUserMessage + config.closeAfterNoResponse > System.currentTimeMillis() && it.inactivityNotify) {
+                        closeTicket(mainGuild.getMember(kord.selfId), null)
+                        return@forEach
+                    }
+                }
+
+                delay(30.minutes.inWholeMilliseconds)
+            }
+        }
     }
 
     private suspend fun createTicket(user: User, interaction: ActionInteractionBehavior) {
@@ -67,7 +119,8 @@ object TicketPart : DiscordModulePart() {
 
         val ticket = Ticket()
         ticket.stateHistory[System.currentTimeMillis()] = TicketState.OPENED to user.id.value.toLong()
-        ticket.lastCreatorMessage = System.currentTimeMillis()
+        ticket.lastUserMessage = System.currentTimeMillis()
+        ticket.users.add(user.id.value.toLong())
 
         val channel =
             mainGuild.createTextChannel("${config.channelPrefix}${config.channelIdentifierType.parse(user)}") {
@@ -92,7 +145,7 @@ object TicketPart : DiscordModulePart() {
                 tickets[ticket.id] = ticket
 
                 it.createMessage(
-                    config.ticketWelcomeMessage, user, mutableMapOf(
+                    config.ticketWelcomeMessages, user, mutableMapOf(
                         "user" to user.mention,
                         "close_emoji" to config.closeEmoji.mention(),
                         "confirm_emoji" to config.confirmEmoji.mention()
@@ -119,11 +172,16 @@ object TicketPart : DiscordModulePart() {
             }
     }
 
-    private suspend fun closeTicket(user: Member, interaction: ActionInteractionBehavior) {
-        val entry = tickets.entries.find { it.value.channelId == interaction.channel.id.value.toLong() }
+    private suspend fun closeTicket(
+        user: Member?, interaction: ActionInteractionBehavior?, channelId: Snowflake? = null
+    ) {
+        if (channelId == null && interaction == null) throw IllegalArgumentException("Either interaction or channelId must be provided!")
+        val entry =
+            tickets.entries.find { it.value.channelId == (channelId ?: interaction!!.channel.id.value.toLong()) }
         val ticket = entry?.value
-        if (ticket == null) {
-            interaction.respondEphemeral {
+        if (ticket == null) { // If interaction is null, it´s called from the scheduler and the ticket existing
+            if (user == null) return
+            interaction!!.respondEphemeral {
                 embed {
                     title = "Error | DustreanNET"
                     description = "This ticket does not exist! Please contact a staff member!"
@@ -133,19 +191,22 @@ object TicketPart : DiscordModulePart() {
             }
             return
         }
-        if (user.id.value.toLong() != ticket.creatorId && !user.roleIds.contains(config.supportRole.snowflake)) {
-            interaction.respondEphemeral {
-                embed {
-                    title = "Error | DustreanNET"
-                    description = "You are not allowed to close this ticket!"
-                    color = Color(250, 0, 0)
-                    useDefaultDesign(user)
+        if (user != null) {
+            if (user.id.value.toLong() != ticket.creatorId && !user.roleIds.contains(config.supportRole.snowflake) && !user.isBot) {
+                interaction!!.respondEphemeral {
+                    embed {
+                        title = "Error | DustreanNET"
+                        description = "You are not allowed to close this ticket!"
+                        color = Color(250, 0, 0)
+                        useDefaultDesign(user)
+                    }
                 }
+                return
             }
-            return
         }
-        if (!ticket.isOpen()) {
-            interaction.respondEphemeral {
+        if (!ticket.isOpen()) { // If interaction is null, it´s called from the scheduler and the ticket existing
+            if (user == null) return
+            interaction!!.respondEphemeral {
                 embed {
                     title = "Error | DustreanNET"
                     description = "This ticket is already closed!"
@@ -155,11 +216,52 @@ object TicketPart : DiscordModulePart() {
             }
             return
         }
-        interaction.respondEphemeral(config.closeConfirmMessage, user) {
-            {
-                button(ButtonStyle.Success, "TICKET_CLOSE_CONFIRM") {
-                    emoji = config.confirmEmoji.partialEmoji()
+        val channel = mainGuild.getChannel(ticket.channelId.snowflake).asChannelOf<TextChannel>()
+        if (interaction != null) {
+            interaction.respondEphemeral(config.closeConfirmMessages, user) {
+                {
+                    button(ButtonStyle.Success, "TICKET_CLOSE_CONFIRM") {
+                        emoji = config.confirmEmoji.partialEmoji()
+                    }
                 }
+            }
+        }else if (user == null) {
+            channel.createMessage {
+                embed {
+                    title = "Ticket | DustreanNET"
+                    description = "This ticket has been closed due the user leaving the server!"
+                    useDefaultDesign(kord.getSelf())
+                }
+            }
+            archiveTicket(ticket, kord.getSelf())
+        } else {
+            channel.createMessage(config.inactivityCloseMessages, user)
+            archiveTicket(ticket, kord.getSelf())
+        }
+    }
+
+    private fun archiveTicket(ticket: Ticket, user: User) {
+        ioScope.launch {
+            ticket.stateHistory[System.currentTimeMillis()] = TicketState.CLOSED to user.id.value.toLong()
+            ticket.update()
+
+            delay(20.seconds)
+
+            val channel = mainGuild.getChannel(ticket.channelId.snowflake).asChannelOf<TextChannel>()
+            channel.edit {
+                parentId = config.archiveCategory.snowflake
+                if (permissionOverwrites == null) permissionOverwrites = mutableSetOf()
+                ticket.users.forEach {
+                    permissionOverwrites!! += Overwrite(
+                        it.snowflake, OverwriteType.Member, deny = Permissions(), allow = Permissions()
+                    )
+                }
+                permissionOverwrites!! += Overwrite(
+                    config.supportRole.snowflake, OverwriteType.Role, deny = Permissions(), allow = Permissions()
+                )
+                permissionOverwrites!! += Overwrite(
+                    config.archiveCategory.snowflake, OverwriteType.Role, deny = Permissions(), allow = Permissions()
+                )
             }
         }
     }
@@ -169,12 +271,13 @@ object TicketPart : DiscordModulePart() {
             "TICKET_CLOSE" -> {
                 closeTicket(interaction.user, interaction)
             }
+
             "TICKET_OPEN" -> {
                 createTicket(interaction.user, interaction)
             }
+
             "TICKET_RULES_CONFIRM" -> {
-                val entry = tickets.entries.find { it.value.channelId == interaction.channel.id.value.toLong() }
-                val ticket = entry?.value
+                val ticket = getTicket(interaction.channel.id)
                 if (ticket == null) {
                     interaction.respondEphemeral {
                         embed {
@@ -204,11 +307,12 @@ object TicketPart : DiscordModulePart() {
                     allowed = Permissions(Permission.SendMessages)
                     denied = Permissions(Permission.ViewChannel)
                 }
-                interaction.channel.createMessage(mainGuild.getRole(config.supportRole.snowflake).mention).also { it.delete() }
+                interaction.channel.createMessage(mainGuild.getRole(config.supportRole.snowflake).mention)
+                    .also { it.delete() }
             }
+
             "TICKET_CLOSE_CONFIRM" -> {
-                val entry = tickets.entries.find { it.value.channelId == interaction.channel.id.value.toLong() }
-                val ticket = entry?.value
+                val ticket = getTicket(interaction.channel.id)
                 if (ticket == null) {
                     interaction.respondEphemeral {
                         embed {
@@ -242,8 +346,6 @@ object TicketPart : DiscordModulePart() {
                     }
                     return@on
                 }
-                ticket.stateHistory[System.currentTimeMillis()] = TicketState.CLOSED to interaction.user.id.value.toLong()
-                ticket.update()
                 interaction.respondPublic {
                     embed {
                         title = "Ticket | DustreanNET"
@@ -252,8 +354,36 @@ object TicketPart : DiscordModulePart() {
                         useDefaultDesign(interaction.user)
                     }
                 }
+                archiveTicket(ticket, interaction.user)
             }
         }
+    }
+
+    private val messageListener = kord.on<MessageCreateEvent> {
+        val ticket = getTicket(message.channelId)
+        if (ticket == null) return@on
+        if (!ticket.isOpen()) return@on
+        val author = message.author ?: return@on
+        if (!ticket.users.contains(author.id.value.toLong())) return@on
+        ticket.lastUserMessage = System.currentTimeMillis()
+        ticket.inactivityNotify = false
+        ticket.update()
+    }
+
+    private val userLeaveListener = kord.on<MemberLeaveEvent> {
+        val tickets = tickets.values.filter { it.users.contains(user.id.value.toLong()) }
+        tickets.forEach {
+            if (it.creatorId == user.id.value.toLong()) {
+                closeTicket(null, null, it.channelId.snowflake)
+            }else {
+                it.users.remove(user.id.value.toLong())
+                it.update()
+            }
+        }
+    }
+
+    fun getTicket(channelId: Snowflake): Ticket? {
+        return tickets.values.find { it.channelId == channelId.value.toLong() }
     }
 
     private fun loadConfigCommand() {
@@ -297,5 +427,130 @@ object TicketPart : DiscordModulePart() {
             }
         }
     }
+
+
+    override val commands: List<CommandBuilder> = mutableListOf(
+        inputCommand("ticket", mainGuild.id, "Ticket commands") {
+            subCommand("create", "Create a ticket") {
+                perform(null, this) {
+                    ioScope.launch {
+                        createTicket(interaction.user, interaction)
+                    }
+                }
+            }
+            subCommand("close", "Close a ticket") {
+                perform(null, this) {
+                    ioScope.launch {
+                        closeTicket(interaction.user, interaction)
+                    }
+                }
+            }
+            subCommand("info", "Info about the current ticket") {
+                perform(null, this) {
+                    ioScope.launch {
+                        val ticket = getTicket(interaction.channel.id)
+                        if (ticket == null) {
+                            interaction.respondEphemeral {
+                                embed {
+                                    title = "Error | DustreanNET"
+                                    description =
+                                        "This ticket does not exist! Please contact a staff member if you think this is an error!"
+                                    color = Color(250, 0, 0)
+                                    useDefaultDesign(interaction.user)
+                                }
+                            }
+                            return@launch
+                        }
+                        val users = ticket.users.mapNotNull {
+                            if (it == ticket.creatorId) return@mapNotNull null
+                            return@mapNotNull kord.getUser(it.snowflake)
+                        }
+                        val creator = kord.getUser(ticket.creatorId.snowflake)
+                        interaction.respondEphemeral {
+                            embed {
+                                title = "Ticket | DustreanNET"
+                                description =
+                                    ":round_pushpin: Ticket ID: ${
+                                        ticket.id
+                                    }\n" +
+                                            ":bellhop: Creator: <@${
+                                                creator?.id?.value ?: ticket.creatorId
+                                            }>\n" +
+                                            ":gear: Users: ${
+                                                users.joinToString(", ") { "<@${it.mention}>" }
+                                            }\n" +
+                                            ":envelope_with_arrow: Created at: ${
+                                                ticket.stateHistory.firstNotNullOf {
+                                                    SimpleDateFormat("HH:mm dd.MM.yyyy").format(ticket.stateHistory.firstNotNullOfOrNull { it.key })
+                                                }
+                                            }\n" +
+                                            ":calling: Last user message: ${
+                                                ticket.stateHistory.firstNotNullOf {
+                                                    SimpleDateFormat("HH:mm dd.MM.yyyy").format(ticket.lastUserMessage)
+                                                }
+                                            }\n" +
+                                            ":hourglass_flowing_sand: Inactivity notify: ${ticket.inactivityNotify}\n" +
+                                            ":calendar_spiral: History: ${
+                                                ticket.stateHistory.map {
+                                                    " • ${SimpleDateFormat("HH:mm dd.MM.yyyy").format(it.key)}: ${
+                                                        when (it.value.first) {
+                                                            TicketState.OPENED -> "Open"
+                                                            TicketState.CLOSED -> "Closed (Archived)"
+                                                            TicketState.DELETED -> "Closed (Deleted)"
+                                                            TicketState.REOPENED -> "Reopened"
+                                                        }
+                                                    }"
+                                                }.joinToString("\n")
+                                            }"
+                                useDefaultDesign(interaction.user)
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        inputCommand("ticket-control", mainGuild.id, "Ticket control commands") {
+            permissions += Permission.ManageMessages
+            subCommand("archive-view", "Toggle archive-view") {
+                perform(null, this) {
+                    ioScope.launch {
+                        val role = mainGuild.getRoleOrNull(config.archiveViewRole.snowflake)
+                        if (role == null) {
+                            interaction.respondEphemeral {
+                                embed {
+                                    title = "Error | DustreanNET"
+                                    description =
+                                        "The archive-view role does not exist! Please contact an administrator!"
+                                    color = Color(250, 0, 0)
+                                    useDefaultDesign(interaction.user)
+                                }
+                            }
+                            return@launch
+                        }
+                        val member = mainGuild.getMember(interaction.user.id)
+                        if (member.roleIds.contains(role.id)) {
+                            member.removeRole(role.id)
+                            interaction.respondEphemeral {
+                                embed {
+                                    title = "Info | DustreanNET"
+                                    description = "You can´t view archived tickets anymore!"
+                                    useDefaultDesign(interaction.user)
+                                }
+                            }
+                        } else {
+                            member.addRole(role.id)
+                            interaction.respondEphemeral {
+                                embed {
+                                    title = "Info | DustreanNET"
+                                    description = "You can now view archived tickets!"
+                                    useDefaultDesign(interaction.user)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    )
 
 }

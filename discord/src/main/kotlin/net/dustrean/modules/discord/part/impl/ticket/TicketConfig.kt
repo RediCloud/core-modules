@@ -1,10 +1,13 @@
 package net.dustrean.modules.discord.part.impl.ticket
 
 import dev.kord.core.entity.User
+import kotlinx.coroutines.launch
+import net.dustrean.api.ICoreAPI
 import net.dustrean.modules.discord.data.AbstractDiscordConfig
 import net.dustrean.modules.discord.data.Emoji
 import net.dustrean.modules.discord.data.embed
 import net.dustrean.modules.discord.data.messages
+import net.dustrean.modules.discord.ioScope
 import kotlin.time.Duration.Companion.days
 
 class TicketConfig() : AbstractDiscordConfig() {
@@ -12,9 +15,11 @@ class TicketConfig() : AbstractDiscordConfig() {
     override val key = "discord:modules:ticket"
     var openMessages = mutableListOf<Long>()
     var category = 1064653389063012532L
-    var archiveChannel = 1064653495925473371L
+    var archiveCategory = 1064653495925473371L
+    var deleteAfterArchive = 21.days.inWholeMilliseconds
+    var archiveViewRole = 1065726124056903681
     var supportRole = 1064654488507514983L
-    var publicSupportChannels = mutableListOf(1064654802258247700L)
+    var publicSupportChannels = mutableListOf(1064654802258247700L) //TODO
     var channelPrefix = "ticket-"
     var channelIdentifierType = TicketIdentifierType.NUMBER
     var count = 0
@@ -24,14 +29,28 @@ class TicketConfig() : AbstractDiscordConfig() {
     var closeEmoji = Emoji(null, "❌")
     var confirmEmoji = Emoji(null, "✅")
     var maxOpenTicketsPerUser = 1
-    var closeConfirmMessage = messages {
+    var inactivityNotifyMessages = messages {
+        embed {
+            title = "Inactivity | DustreanNET"
+            description = "Your ticket has been inactive for ${tagAfterNoResponse.days} days. If you still need help, please write a message to not get your ticket closed automatically in ${closeAfterNoResponse.days - tagAfterNoResponse.days} days."
+            color = intArrayOf(250, 0, 0)
+        }
+    }
+    var inactivityCloseMessages = messages {
+        embed {
+            title = "Inactivity | DustreanNET"
+            description = "Your ticket has been inactive for ${closeAfterNoResponse.days} days and has been closed automatically!"
+            color = intArrayOf(250, 0, 0)
+        }
+    }
+    var closeConfirmMessages = messages {
         embed {
             title = "Confirm | DustreanNET"
             description = "Are you sure you want to close this ticket?"
             color = intArrayOf(250, 0, 0)
         }
     }
-    var ticketWelcomeMessage = messages {
+    var ticketWelcomeMessages = messages {
         embed {
             title = "Welcome | DustreanNET"
             description = "Welcome {user},\n" +
@@ -69,7 +88,14 @@ enum class TicketIdentifierType {
     fun parse(user: User): String {
         return when(this) {
             USER_ID -> user.id.value.toString()
-            NUMBER -> TicketPart.config.count++.toString()
+            NUMBER -> {
+                val count = TicketPart.config.count
+                ioScope.launch {
+                    TicketPart.config.count++
+                    ICoreAPI.INSTANCE.getConfigManager().saveConfig(TicketPart.config)
+                }
+                count.toString()
+            }
             USER_NAME -> user.username
         }
     }
