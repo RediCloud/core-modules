@@ -18,13 +18,16 @@ import dev.kord.core.event.guild.MemberLeaveEvent
 import dev.kord.core.event.interaction.GuildButtonInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
+import dev.kord.rest.builder.interaction.boolean
 import dev.kord.rest.builder.interaction.channel
+import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.message.create.actionRow
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.dustrean.api.ICoreAPI
 import net.dustrean.api.utils.extension.ExternalRMap
+import net.dustrean.api.utils.extension.JsonObjectData
 import net.dustrean.api.utils.extension.getExternalMap
 import net.dustrean.modules.discord.DiscordModuleMain
 import net.dustrean.modules.discord.data.createMessage
@@ -39,9 +42,9 @@ import net.dustrean.modules.discord.util.commands.inputCommand
 import net.dustrean.modules.discord.util.interactions.button
 import net.dustrean.modules.discord.util.message.useDefaultDesign
 import net.dustrean.modules.discord.util.snowflake
+import org.redisson.api.RMap
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 object TicketPart : DiscordModulePart() {
@@ -93,12 +96,12 @@ object TicketPart : DiscordModulePart() {
                         return@forEach
                     }
                     if (it.lastUserMessage + config.closeAfterNoResponse > System.currentTimeMillis() && it.inactivityNotify) {
-                        closeTicket(mainGuild.getMember(kord.selfId), null)
+                        closeTicket(mainGuild.getMember(kord.selfId), null, it.channelId.snowflake)
                         return@forEach
                     }
                 }
 
-                delay(30.minutes.inWholeMilliseconds)
+                delay(30.seconds.inWholeMilliseconds)
             }
         }
     }
@@ -176,8 +179,13 @@ object TicketPart : DiscordModulePart() {
         user: Member?, interaction: ActionInteractionBehavior?, channelId: Snowflake? = null
     ) {
         if (channelId == null && interaction == null) throw IllegalArgumentException("Either interaction or channelId must be provided!")
-        val entry =
-            tickets.entries.find { it.value.channelId == (channelId ?: interaction!!.channel.id.value.toLong()) }
+        val entry = tickets.entries.find {
+            if (channelId != null) {
+                it.value.channelId == channelId.value.toLong()
+            } else {
+                it.value.channelId == interaction!!.channelId.value.toLong()
+            }
+        }
         val ticket = entry?.value
         if (ticket == null) { // If interaction is null, it´s called from the scheduler and the ticket existing
             if (user == null) return
@@ -205,8 +213,8 @@ object TicketPart : DiscordModulePart() {
             }
         }
         if (!ticket.isOpen()) { // If interaction is null, it´s called from the scheduler and the ticket existing
-            if (user == null) return
-            interaction!!.respondEphemeral {
+            if (interaction == null) return
+            interaction.respondEphemeral {
                 embed {
                     title = "Error | DustreanNET"
                     description = "This ticket is already closed!"
@@ -225,7 +233,7 @@ object TicketPart : DiscordModulePart() {
                     }
                 }
             }
-        }else if (user == null) {
+        } else if (user == null) {
             channel.createMessage {
                 embed {
                     title = "Ticket | DustreanNET"
@@ -260,7 +268,10 @@ object TicketPart : DiscordModulePart() {
                     config.supportRole.snowflake, OverwriteType.Role, deny = Permissions(), allow = Permissions()
                 )
                 permissionOverwrites!! += Overwrite(
-                    config.archiveCategory.snowflake, OverwriteType.Role, deny = Permissions(), allow = Permissions()
+                    config.archiveViewRole.snowflake, OverwriteType.Role, deny = Permissions(), allow = Permissions()
+                )
+                permissionOverwrites!! += Overwrite(
+                    mainGuild.everyoneRole.id, OverwriteType.Role, deny = Permissions(Permission.ViewChannel), allow = Permissions()
                 )
             }
         }
@@ -375,16 +386,14 @@ object TicketPart : DiscordModulePart() {
         tickets.forEach {
             if (it.creatorId == user.id.value.toLong()) {
                 closeTicket(null, null, it.channelId.snowflake)
-            }else {
+            } else {
                 it.users.remove(user.id.value.toLong())
                 it.update()
             }
         }
     }
 
-    fun getTicket(channelId: Snowflake): Ticket? {
-        return tickets.values.find { it.channelId == channelId.value.toLong() }
-    }
+    fun getTicket(channelId: Snowflake): Ticket? = tickets.values.find { it.channelId == channelId.value.toLong() }
 
     private fun loadConfigCommand() {
         DiscordModuleMain.CONFIG_COMMANDS.forEach {
@@ -428,9 +437,8 @@ object TicketPart : DiscordModulePart() {
         }
     }
 
-
-    override val commands: List<CommandBuilder> = mutableListOf(
-        inputCommand("ticket", mainGuild.id, "Ticket commands") {
+    override val commands: List<CommandBuilder> =
+        mutableListOf(inputCommand("ticket", mainGuild.id, "Ticket commands") {
             subCommand("create", "Create a ticket") {
                 perform(null, this) {
                     ioScope.launch {
@@ -469,48 +477,172 @@ object TicketPart : DiscordModulePart() {
                         interaction.respondEphemeral {
                             embed {
                                 title = "Ticket | DustreanNET"
-                                description =
-                                    ":round_pushpin: Ticket ID: ${
-                                        ticket.id
-                                    }\n" +
-                                            ":bellhop: Creator: <@${
-                                                creator?.id?.value ?: ticket.creatorId
-                                            }>\n" +
-                                            ":gear: Users: ${
-                                                users.joinToString(", ") { "<@${it.mention}>" }
-                                            }\n" +
-                                            ":envelope_with_arrow: Created at: ${
-                                                ticket.stateHistory.firstNotNullOf {
-                                                    SimpleDateFormat("HH:mm dd.MM.yyyy").format(ticket.stateHistory.firstNotNullOfOrNull { it.key })
-                                                }
-                                            }\n" +
-                                            ":calling: Last user message: ${
-                                                ticket.stateHistory.firstNotNullOf {
-                                                    SimpleDateFormat("HH:mm dd.MM.yyyy").format(ticket.lastUserMessage)
-                                                }
-                                            }\n" +
-                                            ":hourglass_flowing_sand: Inactivity notify: ${ticket.inactivityNotify}\n" +
-                                            ":calendar_spiral: History: ${
-                                                ticket.stateHistory.map {
-                                                    " • ${SimpleDateFormat("HH:mm dd.MM.yyyy").format(it.key)}: ${
-                                                        when (it.value.first) {
-                                                            TicketState.OPENED -> "Open"
-                                                            TicketState.CLOSED -> "Closed (Archived)"
-                                                            TicketState.DELETED -> "Closed (Deleted)"
-                                                            TicketState.REOPENED -> "Reopened"
-                                                        }
-                                                    }"
-                                                }.joinToString("\n")
-                                            }"
+                                description = ":round_pushpin: Ticket ID: ${
+                                    ticket.id
+                                }\n" + ":bellhop: Creator: <@${
+                                    creator?.id?.value ?: ticket.creatorId
+                                }>\n" + ":gear: Users: ${
+                                    users.joinToString(", ") { "<@${it.mention}>" }
+                                }\n" + ":envelope_with_arrow: Created at: ${
+                                    ticket.stateHistory.firstNotNullOf {
+                                        SimpleDateFormat("HH:mm dd.MM.yyyy").format(ticket.stateHistory.firstNotNullOfOrNull { it.key })
+                                    }
+                                }\n" + ":calling: Last user message: ${
+                                    ticket.stateHistory.firstNotNullOf {
+                                        SimpleDateFormat("HH:mm dd.MM.yyyy").format(ticket.lastUserMessage)
+                                    }
+                                }\n" + ":hourglass_flowing_sand: Inactivity notify: ${
+                                    ticket.inactivityNotify
+                                }\n" + ":calendar_spiral: History: \n${
+                                    ticket.stateHistory.map {
+                                        " • ${SimpleDateFormat("HH:mm dd.MM.yyyy").format(it.key)}: ${
+                                            when (it.value.first) {
+                                                TicketState.OPENED -> "Open"
+                                                TicketState.CLOSED -> "Closed (Archived)"
+                                                TicketState.DELETED -> "Closed (Deleted)"
+                                                TicketState.REOPENED -> "Reopened"
+                                            }
+                                        }"
+                                    }.joinToString("\n")
+                                }"
                                 useDefaultDesign(interaction.user)
                             }
                         }
                     }
                 }
             }
-        },
-        inputCommand("ticket-control", mainGuild.id, "Ticket control commands") {
-            permissions += Permission.ManageMessages
+        }, inputCommand("ticket-control", mainGuild.id, "Ticket control commands") {
+            permissions += Permission.All
+            group("dev", "Development commands") {
+                subCommand("lastusermessage", "Set the time of the last user message manually") {
+                    string("id", "The id of the ticket") {
+                        required = true
+                    }
+                    string("time", "The time in milliseconds") {
+                        required = false
+                    }
+                    perform(this@group, this) {
+                        ioScope.launch {
+                            val id = try {
+                                UUID.fromString(interaction.command.strings["id"]!!)
+                            } catch (e: Exception) {
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Error | DustreanNET"
+                                        description = "The id is not valid!"
+                                        color = Color(250, 0, 0)
+                                        useDefaultDesign(interaction.user)
+                                    }
+                                }
+                                return@launch
+                            }
+                            val ticket = tickets[id] ?: run {
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Error | DustreanNET"
+                                        description = "The ticket does not exist!"
+                                        color = Color(250, 0, 0)
+                                        useDefaultDesign(interaction.user)
+                                    }
+                                }
+                                return@launch
+                            }
+                            val time = try {
+                                interaction.command.strings["time"]?.toLong() ?: ticket.lastUserMessage
+                            } catch (e: Exception) {
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Error | DustreanNET"
+                                        description = "The time is not valid!"
+                                        color = Color(250, 0, 0)
+                                        useDefaultDesign(interaction.user)
+                                    }
+                                }
+                                return@launch
+                            }
+                            if (interaction.command.strings["time"] != null) {
+                                ticket.lastUserMessage = time
+                                ticket.update()
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description = "The last user message has been set to ${
+                                            SimpleDateFormat("HH:mm dd.MM.yyyy").format(time)
+                                        }"
+                                        useDefaultDesign(interaction.user)
+                                    }
+                                }
+                            } else {
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description = "The last user message time has been set to ${
+                                            SimpleDateFormat("HH:mm dd.MM.yyyy").format(time)
+                                        }"
+                                        useDefaultDesign(interaction.user)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                subCommand("inacitvitynotified", "Set the inactivity notified state manually") {
+                    string("id", "The id of the ticket") {
+                        required = true
+                    }
+                    boolean("state", "The state of the inactivity notified") {
+                        required = false
+                    }
+                    perform(this@group, this) {
+                        ioScope.launch {
+                            val id = try {
+                                UUID.fromString(interaction.command.strings["id"]!!)
+                            } catch (e: Exception) {
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Error | DustreanNET"
+                                        description = "The id is not valid!"
+                                        color = Color(250, 0, 0)
+                                        useDefaultDesign(interaction.user)
+                                    }
+                                }
+                                return@launch
+                            }
+                            val ticket = tickets[id] ?: run {
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Error | DustreanNET"
+                                        description = "The ticket does not exist!"
+                                        color = Color(250, 0, 0)
+                                        useDefaultDesign(interaction.user)
+                                    }
+                                }
+                                return@launch
+                            }
+                            val state = interaction.command.booleans["state"] ?: ticket.inactivityNotify
+                            if (interaction.command.booleans["state"] != null) {
+                                ticket.inactivityNotify = state
+                                ticket.update()
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description = "The inactivity notified state has been set to $state"
+                                        useDefaultDesign(interaction.user)
+                                    }
+                                }
+                            } else {
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description = "The inactivity notified state is $state"
+                                        useDefaultDesign(interaction.user)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             subCommand("archive-view", "Toggle archive-view") {
                 perform(null, this) {
                     ioScope.launch {
@@ -550,7 +682,6 @@ object TicketPart : DiscordModulePart() {
                     }
                 }
             }
-        }
-    )
+        })
 
 }
