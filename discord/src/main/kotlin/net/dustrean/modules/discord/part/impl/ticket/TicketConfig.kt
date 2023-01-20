@@ -9,15 +9,16 @@ import net.dustrean.modules.discord.data.embed
 import net.dustrean.modules.discord.data.messages
 import net.dustrean.modules.discord.ioScope
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.milliseconds
 
 class TicketConfig() : AbstractDiscordConfig() {
 
     override val key = "discord:modules:ticket"
     var openMessages = mutableListOf<Long>()
     var category = 1064653389063012532L
-    var archiveCategory = 1064653495925473371L
+    var archiveCategory = 1066077906897490041L
     var deleteAfterArchive = 21.days.inWholeMilliseconds
-    var archiveViewRole = 1065726124056903681
+    var archiveViewRole = 1065726124056903681L
     var supportRole = 1064654488507514983L
     var publicSupportChannels = mutableListOf(1064654802258247700L) //TODO
     var channelPrefix = "ticket-"
@@ -32,14 +33,14 @@ class TicketConfig() : AbstractDiscordConfig() {
     var inactivityNotifyMessages = messages {
         embed {
             title = "Inactivity | DustreanNET"
-            description = "Your ticket has been inactive for ${tagAfterNoResponse.days} days. If you still need help, please write a message to not get your ticket closed automatically in ${closeAfterNoResponse.days - tagAfterNoResponse.days} days."
+            description = "Your ticket has been inactive for ${tagAfterNoResponse.milliseconds.inWholeDays} days. If you still need help, please write a message to not get your ticket closed automatically in ${closeAfterNoResponse.milliseconds.inWholeDays - tagAfterNoResponse.milliseconds.inWholeDays} days."
             color = intArrayOf(250, 0, 0)
         }
     }
     var inactivityCloseMessages = messages {
         embed {
             title = "Inactivity | DustreanNET"
-            description = "Your ticket has been inactive for ${closeAfterNoResponse.days} days and has been closed automatically!"
+            description = "Your ticket has been inactive for ${closeAfterNoResponse.milliseconds.inWholeDays} days and has been closed automatically!"
             color = intArrayOf(250, 0, 0)
         }
     }
