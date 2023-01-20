@@ -11,6 +11,7 @@ import dev.kord.core.behavior.interaction.ActionInteractionBehavior
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.entity.Member
+import dev.kord.core.entity.PermissionOverwrite
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.TextChannel
@@ -21,6 +22,7 @@ import dev.kord.core.on
 import dev.kord.rest.builder.interaction.boolean
 import dev.kord.rest.builder.interaction.channel
 import dev.kord.rest.builder.interaction.string
+import dev.kord.rest.builder.interaction.user
 import dev.kord.rest.builder.message.create.actionRow
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
@@ -500,10 +502,113 @@ object TicketPart : DiscordModulePart() {
                     }
                 }
             }
+            subCommand("open", "Create a ticket") {
+                perform(null, this) {
+                    ioScope.launch {
+                        createTicket(interaction.user, interaction)
+                    }
+                }
+            }
             subCommand("close", "Close a ticket") {
                 perform(null, this) {
                     ioScope.launch {
                         closeTicket(interaction.user, interaction)
+                    }
+                }
+            }
+            subCommand("add", "Add a user to a ticket") {
+                user("user", "The user to add") {
+                    required = true
+                }
+                perform(null, this) {
+                    ioScope.launch {
+                        val ticket = getTicket(interaction.channel.id)
+                        if (ticket == null) {
+                            interaction.respondEphemeral {
+                                embed {
+                                    title = "Error | DustreanNET"
+                                    description = "This ticket does not exist! Please contact a staff member!"
+                                    color = Color(250, 0, 0)
+                                    useDefaultDesign(interaction.user)
+                                }
+                            }
+                            return@launch
+                        }
+                        if (interaction.user.id.value.toLong() != ticket.creatorId && !interaction.user.roleIds.contains(config.supportRole.snowflake)) {
+                            interaction.respondEphemeral {
+                                embed {
+                                    title = "Error | DustreanNET"
+                                    description = "You are not allowed to add users to this ticket!"
+                                }
+                            }
+                            return@launch
+                        }
+                        val user = interaction.command.users["user"]!!
+                        ticket.users.add(user.id.value.toLong())
+                        ticket.update()
+                        interaction.channel.asChannelOf<TextChannel>().edit {
+                            permissionOverwrites!! += Overwrite(
+                                user.id,
+                                OverwriteType.Member,
+                                allow = Permissions(Permission.ViewChannel),
+                                deny = Permissions()
+                            )
+                        }
+                        interaction.respondPublic {
+                            embed {
+                                title = "Info | DustreanNET"
+                                description = "The user ${user.mention} has been added to this ticket!"
+                                useDefaultDesign(interaction.user)
+                            }
+                        }
+                    }
+                }
+            }
+            subCommand("remove", "Remove a user from a ticket") {
+                user("user", "The user to add") {
+                    required = true
+                }
+                perform(null, this) {
+                    ioScope.launch {
+                        val ticket = getTicket(interaction.channel.id)
+                        if (ticket == null) {
+                            interaction.respondEphemeral {
+                                embed {
+                                    title = "Error | DustreanNET"
+                                    description = "This ticket does not exist! Please contact a staff member!"
+                                    color = Color(250, 0, 0)
+                                    useDefaultDesign(interaction.user)
+                                }
+                            }
+                            return@launch
+                        }
+                        if (interaction.user.id.value.toLong() != ticket.creatorId && !interaction.user.roleIds.contains(config.supportRole.snowflake)) {
+                            interaction.respondEphemeral {
+                                embed {
+                                    title = "Error | DustreanNET"
+                                    description = "You are not allowed to remove users from this ticket!"
+                                }
+                            }
+                            return@launch
+                        }
+                        val user = interaction.command.users["user"]!!
+                        ticket.users.remove(user.id.value.toLong())
+                        ticket.update()
+                        interaction.channel.asChannelOf<TextChannel>().edit {
+                            permissionOverwrites!! += Overwrite(
+                                user.id,
+                                OverwriteType.Member,
+                                allow = Permissions(),
+                                deny = Permissions()
+                            )
+                        }
+                        interaction.respondPublic {
+                            embed {
+                                title = "Info | DustreanNET"
+                                description = "The user ${user.mention} has been removed from this ticket!"
+                                useDefaultDesign(interaction.user)
+                            }
+                        }
                     }
                 }
             }
