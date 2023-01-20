@@ -89,13 +89,13 @@ object TicketPart : DiscordModulePart() {
                         return@forEach
                     }
                     val messageChannel = channel.asChannelOf<GuildMessageChannel>()
-                    if (it.lastUserMessage + config.tagAfterNoResponse > System.currentTimeMillis() && !it.inactivityNotify) {
+                    if (it.lastUserMessage + config.tagAfterNoResponse < System.currentTimeMillis() && !it.inactivityNotify) {
                         messageChannel.createMessage(config.inactivityNotifyMessages)
                         it.inactivityNotify = true
                         it.update()
                         return@forEach
                     }
-                    if (it.lastUserMessage + config.closeAfterNoResponse > System.currentTimeMillis() && it.inactivityNotify) {
+                    if (it.lastUserMessage + config.closeAfterNoResponse < System.currentTimeMillis() && it.inactivityNotify) {
                         closeTicket(mainGuild.getMember(kord.selfId), null, it.channelId.snowflake)
                         return@forEach
                     }
