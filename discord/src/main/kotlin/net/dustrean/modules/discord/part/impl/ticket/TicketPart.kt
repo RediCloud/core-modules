@@ -268,7 +268,7 @@ object TicketPart : DiscordModulePart() {
                     config.supportRole.snowflake, OverwriteType.Role, deny = Permissions(), allow = Permissions()
                 )
                 permissionOverwrites!! += Overwrite(
-                    config.archiveViewRole.snowflake, OverwriteType.Role, deny = Permissions(), allow = Permissions()
+                    config.archiveViewRole.snowflake, OverwriteType.Role, deny = Permissions(), allow = Permissions(Permission.ViewChannel)
                 )
                 permissionOverwrites!! += Overwrite(
                     mainGuild.everyoneRole.id, OverwriteType.Role, deny = Permissions(Permission.ViewChannel), allow = Permissions()
