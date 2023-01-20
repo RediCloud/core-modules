@@ -26,8 +26,8 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.dustrean.api.ICoreAPI
+import net.dustrean.api.utils.ExceptionHandler.haste
 import net.dustrean.api.utils.extension.ExternalRMap
-import net.dustrean.api.utils.extension.JsonObjectData
 import net.dustrean.api.utils.extension.getExternalMap
 import net.dustrean.modules.discord.DiscordModuleMain
 import net.dustrean.modules.discord.data.createMessage
@@ -42,7 +42,6 @@ import net.dustrean.modules.discord.util.commands.inputCommand
 import net.dustrean.modules.discord.util.interactions.button
 import net.dustrean.modules.discord.util.message.useDefaultDesign
 import net.dustrean.modules.discord.util.snowflake
-import org.redisson.api.RMap
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.time.Duration.Companion.seconds
@@ -68,35 +67,84 @@ object TicketPart : DiscordModulePart() {
     private fun startScheduler() {
         ioScope.launch {
             repeat(100_000) {
-                tickets.values.forEach {
-                    if (!it.isOpen()) {
-                        if (it.getArchiveTime() + config.deleteAfterArchive <= System.currentTimeMillis()) {
-                            //TODO: save conversion messages
-                            it.stateHistory[System.currentTimeMillis()] =
+                tickets.values.forEach { ticket ->
+                    val channel = mainGuild.getChannelOrNull(ticket.channelId.snowflake)
+                    if (!ticket.isOpen()) {
+                        if (ticket.getArchiveTime() + config.deleteAfterArchive <= System.currentTimeMillis()) {
+                            ticket.stateHistory[System.currentTimeMillis()] =
                                 TicketState.DELETED to kord.selfId.value.toLong()
-                            it.update()
-                            val channel = mainGuild.getChannelOrNull(it.channelId.snowflake)
+                            ticket.update()
+                            var content = "Not available anymore, because the ticket was deleted manually!"
                             if (channel != null) {
+                                content =
+                                    "Ticket ID: ${ticket.id}\n" + "Ticket Owner: <@${ticket.creatorId}>\n" + "Ticket Channel: <#${ticket.channelId}>\n" + "Ticket State History: \n" + "- ${
+                                        ticket.stateHistory.map { (state, i) ->
+                                            "$state by ${
+                                                kord.getUser(i.second.snowflake).let {
+                                                    return@let if (it != null) it.mention + "#" + it.discriminator else "Unknown User (${i.second})"
+                                                }
+                                            }"
+                                        }
+                                    }\n\n\n"
+
+                                channel.asChannelOf<TextChannel>().messages.collect() {
+                                    val userName = it.author?.let { user ->
+                                        return@let user.mention + "#" + user.discriminator
+                                    } ?: "Unknown User"
+                                    content += "${it.author?.username}#${it.author?.discriminator} (${
+                                        SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(Date(it.timestamp.epochSeconds * 1000))
+                                    }): ${it.content}\n"
+                                    it.embeds.forEach {
+                                        content += "Embed: ${it.title} - ${it.description} - ${
+                                            it.fields.map { it.name + ": " + it.value }.joinToString { "; " }
+                                        }\n"
+                                    }
+                                }
                                 channel.delete()
+                            }
+
+                            val archiveConversionUrl = content.haste(System.getenv("EXCEPTION_HASTE_URL"))
+
+                            val archiveChannel = mainGuild.getChannelOrNull(config.archiveChannel.snowflake)
+                            if (archiveChannel != null) {
+                                archiveChannel.asChannelOf<TextChannel>().createMessage {
+                                    embed {
+                                        title = "Archive | DustreanNET"
+                                        description = "Ticket ID: ${ticket.id}\n" +
+                                                "Ticket Owner: <@${ticket.creatorId}>\n" +
+                                                "Ticket Channel: <#${ticket.channelId}>\n" +
+                                                "Ticket State History: \n" +
+                                                "- ${
+                                                    ticket.stateHistory.map { (state, i) ->
+                                                        "$state by ${
+                                                            kord.getUser(i.second.snowflake).let {
+                                                                return@let if (it != null) it.mention + "#" + it.discriminator else "Unknown User (${i.second})"
+                                                            }
+                                                        }"
+                                                    }
+                                        }\n" +
+                                                "Archive-URL: $archiveConversionUrl"
+                                    }
+                                }
                             }
                         }
                         return@forEach
                     }
-                    val channel = mainGuild.getChannelOrNull(it.channelId.snowflake)
                     if (channel == null) {
-                        it.stateHistory[System.currentTimeMillis()] = TicketState.DELETED to kord.selfId.value.toLong()
-                        it.update()
+                        ticket.stateHistory[System.currentTimeMillis()] =
+                            TicketState.DELETED to kord.selfId.value.toLong()
+                        ticket.update()
                         return@forEach
                     }
                     val messageChannel = channel.asChannelOf<GuildMessageChannel>()
-                    if (it.lastUserMessage + config.tagAfterNoResponse < System.currentTimeMillis() && !it.inactivityNotify) {
+                    if (ticket.lastUserMessage + config.tagAfterNoResponse < System.currentTimeMillis() && !ticket.inactivityNotify) {
                         messageChannel.createMessage(config.inactivityNotifyMessages)
-                        it.inactivityNotify = true
-                        it.update()
+                        ticket.inactivityNotify = true
+                        ticket.update()
                         return@forEach
                     }
-                    if (it.lastUserMessage + config.closeAfterNoResponse < System.currentTimeMillis() && it.inactivityNotify) {
-                        closeTicket(mainGuild.getMember(kord.selfId), null, it.channelId.snowflake)
+                    if (ticket.lastUserMessage + config.closeAfterNoResponse < System.currentTimeMillis() && ticket.inactivityNotify) {
+                        closeTicket(mainGuild.getMember(kord.selfId), null, ticket.channelId.snowflake)
                         return@forEach
                     }
                 }
@@ -268,10 +316,16 @@ object TicketPart : DiscordModulePart() {
                     config.supportRole.snowflake, OverwriteType.Role, deny = Permissions(), allow = Permissions()
                 )
                 permissionOverwrites!! += Overwrite(
-                    config.archiveViewRole.snowflake, OverwriteType.Role, deny = Permissions(), allow = Permissions(Permission.ViewChannel)
+                    config.archiveViewRole.snowflake,
+                    OverwriteType.Role,
+                    deny = Permissions(),
+                    allow = Permissions(Permission.ViewChannel)
                 )
                 permissionOverwrites!! += Overwrite(
-                    mainGuild.everyoneRole.id, OverwriteType.Role, deny = Permissions(Permission.ViewChannel), allow = Permissions()
+                    mainGuild.everyoneRole.id,
+                    OverwriteType.Role,
+                    deny = Permissions(Permission.ViewChannel),
+                    allow = Permissions()
                 )
             }
         }

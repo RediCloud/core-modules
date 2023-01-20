@@ -17,6 +17,7 @@ class TicketConfig() : AbstractDiscordConfig() {
     var openMessages = mutableListOf<Long>()
     var category = 1064653389063012532L
     var archiveCategory = 1066077906897490041L
+    var archiveChannel = 1064653495925473371L
     var deleteAfterArchive = 21.days.inWholeMilliseconds
     var archiveViewRole = 1065726124056903681L
     var supportRole = 1064654488507514983L
