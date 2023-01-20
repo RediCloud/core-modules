@@ -10,12 +10,16 @@ import net.dustrean.modules.discord.kord
 
 private val listener = kord.on<GuildChatInputCommandInteractionCreateEvent> {
     commands.forEach {
-        if (interaction.command.rootName != it.name) return@on
+        if (interaction.command.rootName != it.name) return@forEach
         val data = interaction.command.data
         val options = data.options.value
         options?.forEach{ optionData ->
             val groupName = optionData.name
-            if (optionData.subCommands.value == null || optionData.subCommands.value!!.isEmpty()) return@on
+            if (optionData.subCommands.value == null || optionData.subCommands.value!!.isEmpty()) {
+                val perform = it.actions[groupName] ?: return@on //group name is here the subcommand name
+                perform(this)
+                return@on
+            }
             val subCommandName = optionData.subCommands.value!![0].name
             val perform = it.actions["${groupName}_${subCommandName}"] ?: return@on
             perform(this)
