@@ -26,9 +26,9 @@ class TicketConfig() : AbstractDiscordConfig() {
     var count = 0
     var tagAfterNoResponse = 3.days.inWholeMilliseconds
     var closeAfterNoResponse = 7.days.inWholeMilliseconds
-    var openEmoji = Emoji(null, "✅")
-    var closeEmoji = Emoji(null, "❌")
-    var confirmEmoji = Emoji(null, "✅")
+    var openEmoji = Emoji(name = "✅")
+    var closeEmoji = Emoji(name = "❌")
+    var confirmEmoji = Emoji(name = "✅")
     var maxOpenTicketsPerUser = 1
     var inactivityNotifyMessages = messages {
         embed {

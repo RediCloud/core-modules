@@ -20,7 +20,7 @@ import net.dustrean.modules.discord.util.snowflake
 abstract class AbstractDiscordConfig : IConfig
 
 data class Emoji(
-    val id: Long?, val name: String?, val animated: Boolean = false
+    val id: Long? = null, val name: String? = null, val animated: Boolean = false
 ) {
     fun mention(): String = if (animated) {
         "<a:$name:$id>"
@@ -36,7 +36,7 @@ data class Emoji(
     )
 }
 
-fun emoji(block: Emoji.() -> Unit): Emoji = Emoji(null, null).apply(block)
+fun emoji(block: Emoji.() -> Unit): Emoji = Emoji().apply(block)
 
 data class Embed(
     var title: String? = null,

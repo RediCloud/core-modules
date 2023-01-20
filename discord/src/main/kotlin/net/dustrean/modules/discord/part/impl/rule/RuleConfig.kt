@@ -6,7 +6,7 @@ import net.dustrean.modules.discord.data.Emoji
 class RuleConfig() : AbstractDiscordConfig() {
     override val key: String = "discord:modules:rule"
     val ruleMessages: List<Rule> = listOf()
-    var acceptEmoji: Emoji = Emoji(null, "✅")
+    var acceptEmoji: Emoji = Emoji(name = "✅")
     var acceptRole = 1064179288552787969L
 }
 
