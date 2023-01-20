@@ -84,7 +84,7 @@ object TicketPart : DiscordModulePart() {
                     }
                     val channel = mainGuild.getChannelOrNull(it.channelId.snowflake)
                     if (channel == null) {
-                        it.stateHistory[System.currentTimeMillis()] = TicketState.CLOSED to kord.selfId.value.toLong()
+                        it.stateHistory[System.currentTimeMillis()] = TicketState.DELETED to kord.selfId.value.toLong()
                         it.update()
                         return@forEach
                     }
