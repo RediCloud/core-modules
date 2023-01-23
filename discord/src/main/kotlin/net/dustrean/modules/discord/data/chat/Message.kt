@@ -14,7 +14,7 @@ data class Message(
     var content: String? = null, val embeds: MutableList<Embed> = mutableListOf(), var defaultDesign: Boolean = true
 )
 
-fun messages(block: Message.() -> Unit): Message = Message().apply(block)
+fun message(block: Message.() -> Unit): Message = Message().apply(block)
 
 //Json from https://old.message.style/dashboard
 fun toMessage(json: String): Message {
