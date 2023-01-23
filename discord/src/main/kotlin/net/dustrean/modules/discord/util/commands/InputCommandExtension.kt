@@ -4,11 +4,15 @@ import dev.kord.common.annotation.KordDsl
 import dev.kord.common.entity.ApplicationCommandOptionType
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.entity.interaction.InteractionCommand
 import dev.kord.core.event.interaction.GuildChatInputCommandInteractionCreateEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.interaction.*
 import kotlinx.coroutines.Job
+import net.dustrean.modules.discord.data.chat.Message
+import net.dustrean.modules.discord.data.chat.toMessage
 import net.dustrean.modules.discord.kord
+import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -93,9 +97,21 @@ inline fun inputCommand(
     name: String, guildID: Snowflake, description: String, crossinline builder: InputCommandBuilder.() -> Unit
 ) = InputCommandBuilder(name, guildID, description).apply(builder)
 
-@kotlin.contracts.ExperimentalContracts
-fun BaseInputChatBuilder.embed(name: String, description: String, required: Boolean = true) {
-    string(name, description) {
-        this.required = required
+fun BaseInputChatBuilder.message(name: String, description: String, builder: StringChoiceBuilder.() -> Unit = {}) {
+    string(name, description, builder)
+}
+
+val InteractionCommand.messages: Map<String, Message> get() {
+    val map = mutableMapOf<String, Message>()
+    strings.forEach { (name, value) ->
+        if (!value.startsWith("{") || !value.endsWith("}")) return@forEach
+        try {
+            val message = toMessage(value)
+            map[name] = message
+        }catch (e: Exception) {
+            e.printStackTrace()
+            return@forEach
+        }
     }
+    return map
 }
