@@ -21,7 +21,7 @@ fun toMessage(json: String): Message {
     val element = JsonParser().parse(json)
     val message = Message()
     message.content = element.asJsonObject["content"]?.asString
-    element.asJsonArray.forEach { embedJsonElement ->
+    element.asJsonObject["embeds"]?.asJsonArray?.forEach { embedJsonElement ->
         val embed = Embed()
         embed.title = embedJsonElement.asJsonObject["title"]?.asString
         //embed.color = embedJsonElement.asJsonObject["color"].asInt //TODO
