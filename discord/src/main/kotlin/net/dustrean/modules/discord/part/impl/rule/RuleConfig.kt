@@ -1,7 +1,7 @@
 package net.dustrean.modules.discord.part.impl.rule
 
 import net.dustrean.modules.discord.data.AbstractDiscordConfig
-import net.dustrean.modules.discord.data.Emoji
+import net.dustrean.modules.discord.data.chat.Emoji
 
 class RuleConfig() : AbstractDiscordConfig() {
     override val key: String = "discord:modules:rule"

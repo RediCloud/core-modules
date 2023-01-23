@@ -32,9 +32,9 @@ import net.dustrean.api.utils.ExceptionHandler.haste
 import net.dustrean.api.utils.extension.ExternalRMap
 import net.dustrean.api.utils.extension.getExternalMap
 import net.dustrean.modules.discord.DiscordModuleMain
-import net.dustrean.modules.discord.data.createMessage
-import net.dustrean.modules.discord.data.respondEphemeral
-import net.dustrean.modules.discord.data.respondPublic
+import net.dustrean.modules.discord.data.chat.createMessage
+import net.dustrean.modules.discord.data.chat.respondEphemeral
+import net.dustrean.modules.discord.data.chat.respondPublic
 import net.dustrean.modules.discord.ioScope
 import net.dustrean.modules.discord.kord
 import net.dustrean.modules.discord.mainGuild
