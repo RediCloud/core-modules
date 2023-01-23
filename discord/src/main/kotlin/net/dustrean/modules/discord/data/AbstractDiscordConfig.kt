@@ -93,6 +93,23 @@ suspend fun Embed.build(user: User?): EmbedBuilder {
     val builder = EmbedBuilder()
     builder.title = title
     builder.description = description
+    builder.author {
+        name = author
+        url = authorUrl
+        icon = authorIconUrl
+    }
+    builder.url = url
+    builder.image = imageUrl
+    thumbnailUrl?.let {
+        if (it.isBlank()) return@let
+        builder.thumbnail {
+            url = it
+        }
+    }
+    builder.footer {
+        if (!footer.isNullOrBlank()) text = footer!!
+        if (!footerIconUrl.isNullOrBlank()) icon = footerIconUrl
+    }
     color?.let {
         builder.color = Color(it[0], it[1], it[2])
     }
