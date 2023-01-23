@@ -1,5 +1,7 @@
 package net.dustrean.modules.discord.util.commands
 
+import dev.kord.common.annotation.KordDsl
+import dev.kord.common.entity.ApplicationCommandOptionType
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.event.interaction.GuildChatInputCommandInteractionCreateEvent
@@ -7,6 +9,8 @@ import dev.kord.core.on
 import dev.kord.rest.builder.interaction.*
 import kotlinx.coroutines.Job
 import net.dustrean.modules.discord.kord
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 private val listener = kord.on<GuildChatInputCommandInteractionCreateEvent> {
     commands.forEach {
@@ -88,3 +92,10 @@ class InputCommandBuilder(
 inline fun inputCommand(
     name: String, guildID: Snowflake, description: String, crossinline builder: InputCommandBuilder.() -> Unit
 ) = InputCommandBuilder(name, guildID, description).apply(builder)
+
+@kotlin.contracts.ExperimentalContracts
+fun BaseInputChatBuilder.embed(name: String, description: String, required: Boolean = true) {
+    string(name, description) {
+        this.required = required
+    }
+}
