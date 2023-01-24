@@ -173,7 +173,7 @@ object ModerationPart : DiscordModulePart() {
     }
 
     private fun loadConfigCommand() {
-        DiscordModuleMain.CONFIG_COMMANDS.forEach { it ->
+        DiscordModuleMain.INSTANCE.configCommands.forEach { it ->
             it.value.apply {
                 group("auto-chat-moderation", "Configure the auto chat moderation") {
                     subCommand("state", "Toggle auto chat moderation") {

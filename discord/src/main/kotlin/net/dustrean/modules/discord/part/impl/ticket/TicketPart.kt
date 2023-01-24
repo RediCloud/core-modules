@@ -453,7 +453,7 @@ object TicketPart : DiscordModulePart() {
     fun getTicket(channelId: Snowflake): Ticket? = tickets.values.find { it.channelId == channelId.value.toLong() }
 
     private fun loadConfigCommand() {
-        DiscordModuleMain.CONFIG_COMMANDS.forEach {
+        DiscordModuleMain.INSTANCE.configCommands.forEach {
             it.value.apply {
                 group("ticket", "Configure the ticket module") {
                     subCommand("create", "Create the open message button") {
