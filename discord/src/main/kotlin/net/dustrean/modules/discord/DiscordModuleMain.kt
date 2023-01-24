@@ -30,10 +30,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.dustrean.api.ICoreAPI
 import net.dustrean.api.module.Module
-import net.dustrean.modules.discord.commands.COMMANDS
-import net.dustrean.modules.discord.commands.StopCommand
-import net.dustrean.modules.discord.commands.notifyStart
-import net.dustrean.modules.discord.commands.notifyStop
+import net.dustrean.modules.discord.commands.*
 import net.dustrean.modules.discord.data.DiscordConfig
 import net.dustrean.modules.discord.data.chat.respondEphemeral
 import net.dustrean.modules.discord.part.parts
@@ -93,7 +90,7 @@ class DiscordModuleMain : Module() {
 
                 configCommands.forEach { it.value.create() }
 
-                COMMANDS.add(StopCommand())
+                COMMANDS.addAll(mutableListOf(StopCommand(), UpTimeCommand()))
 
                 COMMANDS.forEach { it.create() }
 
