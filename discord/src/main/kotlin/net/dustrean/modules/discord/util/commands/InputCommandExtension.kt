@@ -1,27 +1,26 @@
 package net.dustrean.modules.discord.util.commands
 
-import dev.kord.common.annotation.KordDsl
-import dev.kord.common.entity.ApplicationCommandOptionType
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.interaction.InteractionCommand
 import dev.kord.core.event.interaction.GuildChatInputCommandInteractionCreateEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.interaction.*
-import kotlinx.coroutines.Job
 import net.dustrean.modules.discord.data.chat.Message
 import net.dustrean.modules.discord.data.chat.toMessage
 import net.dustrean.modules.discord.kord
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 private val listener = kord.on<GuildChatInputCommandInteractionCreateEvent> {
     commands.forEach {
         if (interaction.command.rootName != it.name) return@forEach
         val data = interaction.command.data
         val options = data.options.value
-        options?.forEach{ optionData ->
+        if (options.isNullOrEmpty()) {
+            val perform = it.actions["_default"] ?: return@on
+            perform(this)
+            return@on
+        }
+        options.forEach{ optionData ->
             val groupName = optionData.name
             if (optionData.subCommands.value == null || optionData.subCommands.value!!.isEmpty()) {
                 val perform = it.actions[groupName] ?: return@on //group name is here the subcommand name
@@ -43,7 +42,7 @@ private val commands = mutableListOf<InputCommandBuilder>()
  * @param description The description which is displayed when tabbing
  */
 @CommandAnnotations.TopLevel.CommandDsl
-class InputCommandBuilder(
+open class InputCommandBuilder(
     override val name: String, override val guildID: Snowflake, private val description: String
 ) : CommandBuilder {
 
@@ -61,8 +60,12 @@ class InputCommandBuilder(
         mutableMapOf<String, ((GuildChatInputCommandInteractionCreateEvent) -> Unit)?>()
 
     @CommandAnnotations.BuildLevel.RunsDsl
-    fun perform(groupContext: GroupCommandBuilder? = null, context: SubCommandBuilder, event: GuildChatInputCommandInteractionCreateEvent.() -> Unit) {
-        var key = context.name
+    fun perform(groupContext: GroupCommandBuilder? = null, context: SubCommandBuilder? = null, event: GuildChatInputCommandInteractionCreateEvent.() -> Unit) {
+        if (groupContext == null && context == null) {
+            actions["_default"] = event
+            return
+        }
+        var key = context!!.name
         if (groupContext != null) key = "${groupContext.name}_$key"
         actions[key] = event
     }
