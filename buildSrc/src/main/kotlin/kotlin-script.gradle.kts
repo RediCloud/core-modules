@@ -25,6 +25,7 @@ dependencies {
     implementation("net.dustrean.api:api:${BuildConstants.coreVersion}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${BuildConstants.coroutinesVersion}")
     implementation("org.redisson:redisson:${BuildConstants.redissonVersion}")
+    implementation("com.google.code.gson:gson:2.10.1")
 }
 
 tasks {

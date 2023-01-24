@@ -22,7 +22,7 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import kotlinx.coroutines.launch
 import net.dustrean.modules.discord.*
-import net.dustrean.modules.discord.data.emoji
+import net.dustrean.modules.discord.data.chat.emoji
 import net.dustrean.modules.discord.part.DiscordModulePart
 import net.dustrean.modules.discord.util.commands.CommandBuilder
 import net.dustrean.modules.discord.util.interactions.button

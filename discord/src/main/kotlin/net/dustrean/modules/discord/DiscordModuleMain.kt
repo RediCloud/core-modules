@@ -31,9 +31,9 @@ import kotlinx.coroutines.runBlocking
 import net.dustrean.api.ICoreAPI
 import net.dustrean.api.module.Module
 import net.dustrean.modules.discord.data.DiscordConfig
+import net.dustrean.modules.discord.data.chat.respondEphemeral
 import net.dustrean.modules.discord.part.parts
-import net.dustrean.modules.discord.util.commands.InputCommandBuilder
-import net.dustrean.modules.discord.util.commands.inputCommand
+import net.dustrean.modules.discord.util.commands.*
 import net.dustrean.modules.discord.util.message.useDefaultDesign
 import net.dustrean.modules.discord.util.snowflake
 
@@ -141,6 +141,27 @@ class DiscordModuleMain : Module() {
         kord.guilds.collect {
             CONFIG_COMMANDS[it.id] = inputCommand("config", it.id, "Edit discord bot configs") {
                 permissions = Permissions(Permission.All)
+                group("test", "Test command") {
+                    subCommand("embed", "Test embed") {
+                        message("test", "This is a test embed") {
+                            required = true
+                        }
+                        perform(this@group, this) {
+                            val message = interaction.command.messages["test"]
+                            if (message != null) {
+                                ioScope.launch {
+                                    interaction.respondEphemeral(message, interaction.user, mutableMapOf())
+                                }
+                            }else{
+                                ioScope.launch {
+                                    interaction.respondEphemeral {
+                                        content = "Message not found:\n```${interaction.command.strings["test"]}```"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 group("general", "General configurations for the bot") {
                     subCommand("mainguild", "Edit the main guild") {
                         string("id", "The id of the main guild") {

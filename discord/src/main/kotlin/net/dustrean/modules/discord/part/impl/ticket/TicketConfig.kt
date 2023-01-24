@@ -4,9 +4,9 @@ import dev.kord.core.entity.User
 import kotlinx.coroutines.launch
 import net.dustrean.api.ICoreAPI
 import net.dustrean.modules.discord.data.AbstractDiscordConfig
-import net.dustrean.modules.discord.data.Emoji
-import net.dustrean.modules.discord.data.embed
-import net.dustrean.modules.discord.data.messages
+import net.dustrean.modules.discord.data.chat.Emoji
+import net.dustrean.modules.discord.data.chat.embed
+import net.dustrean.modules.discord.data.chat.message
 import net.dustrean.modules.discord.ioScope
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
@@ -31,28 +31,28 @@ class TicketConfig() : AbstractDiscordConfig() {
     var closeEmoji = Emoji(name = "❌")
     var confirmEmoji = Emoji(name = "✅")
     var maxOpenTicketsPerUser = 1
-    var inactivityNotifyMessages = messages {
+    var inactivityNotifyMessages = message {
         embed {
             title = "Inactivity | DustreanNET"
             description = "Your ticket has been inactive for ${tagAfterNoResponse.milliseconds.inWholeDays} days. If you still need help, please write a message to not get your ticket closed automatically in ${closeAfterNoResponse.milliseconds.inWholeDays - tagAfterNoResponse.milliseconds.inWholeDays} days."
             color = intArrayOf(250, 0, 0)
         }
     }
-    var inactivityCloseMessages = messages {
+    var inactivityCloseMessages = message {
         embed {
             title = "Inactivity | DustreanNET"
             description = "Your ticket has been inactive for ${closeAfterNoResponse.milliseconds.inWholeDays} days and has been closed automatically!"
             color = intArrayOf(250, 0, 0)
         }
     }
-    var closeConfirmMessages = messages {
+    var closeConfirmMessages = message {
         embed {
             title = "Confirm | DustreanNET"
             description = "Are you sure you want to close this ticket?"
             color = intArrayOf(250, 0, 0)
         }
     }
-    var ticketWelcomeMessages = messages {
+    var ticketWelcomeMessages = message {
         embed {
             title = "Welcome | DustreanNET"
             description = "Welcome {user},\n" +
@@ -72,7 +72,7 @@ class TicketConfig() : AbstractDiscordConfig() {
                     "When you understand this, please react with the {confirm_emoji} emoji to confirm that you have read this message."
         }
     }
-    var confirmMessage = messages {
+    var confirmMessage = message {
         embed {
             title = "Confirmed | DustreanNET"
             description = "Your ticket has been confirmed! Please explain your issue in detail! A staff member will contact you as soon as possible!"
