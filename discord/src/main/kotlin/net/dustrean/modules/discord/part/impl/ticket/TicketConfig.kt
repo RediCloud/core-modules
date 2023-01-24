@@ -31,28 +31,28 @@ class TicketConfig() : AbstractDiscordConfig() {
     var closeEmoji = Emoji(name = "❌")
     var confirmEmoji = Emoji(name = "✅")
     var maxOpenTicketsPerUser = 1
-    var inactivityNotifyMessages = message {
+    var inactivityNotifyMessage = message {
         embed {
             title = "Inactivity | DustreanNET"
             description = "Your ticket has been inactive for ${tagAfterNoResponse.milliseconds.inWholeDays} days. If you still need help, please write a message to not get your ticket closed automatically in ${closeAfterNoResponse.milliseconds.inWholeDays - tagAfterNoResponse.milliseconds.inWholeDays} days."
             color = intArrayOf(250, 0, 0)
         }
     }
-    var inactivityCloseMessages = message {
+    var inactivityCloseMessage = message {
         embed {
             title = "Inactivity | DustreanNET"
             description = "Your ticket has been inactive for ${closeAfterNoResponse.milliseconds.inWholeDays} days and has been closed automatically!"
             color = intArrayOf(250, 0, 0)
         }
     }
-    var closeConfirmMessages = message {
+    var closeConfirmMessage = message {
         embed {
             title = "Confirm | DustreanNET"
             description = "Are you sure you want to close this ticket?"
             color = intArrayOf(250, 0, 0)
         }
     }
-    var ticketWelcomeMessages = message {
+    var ticketWelcomeMessage = message {
         embed {
             title = "Welcome | DustreanNET"
             description = "Welcome {user},\n" +

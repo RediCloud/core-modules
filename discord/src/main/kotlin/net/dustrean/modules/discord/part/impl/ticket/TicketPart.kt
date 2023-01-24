@@ -11,7 +11,6 @@ import dev.kord.core.behavior.interaction.ActionInteractionBehavior
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.entity.Member
-import dev.kord.core.entity.PermissionOverwrite
 import dev.kord.core.entity.User
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.TextChannel
@@ -41,6 +40,8 @@ import net.dustrean.modules.discord.mainGuild
 import net.dustrean.modules.discord.part.DiscordModulePart
 import net.dustrean.modules.discord.util.commands.CommandBuilder
 import net.dustrean.modules.discord.util.commands.inputCommand
+import net.dustrean.modules.discord.util.commands.message
+import net.dustrean.modules.discord.util.commands.messages
 import net.dustrean.modules.discord.util.interactions.button
 import net.dustrean.modules.discord.util.message.useDefaultDesign
 import net.dustrean.modules.discord.util.snowflake
@@ -140,7 +141,7 @@ object TicketPart : DiscordModulePart() {
                     }
                     val messageChannel = channel.asChannelOf<GuildMessageChannel>()
                     if (ticket.lastUserMessage + config.tagAfterNoResponse < System.currentTimeMillis() && !ticket.inactivityNotify) {
-                        messageChannel.createMessage(config.inactivityNotifyMessages)
+                        messageChannel.createMessage(config.inactivityNotifyMessage)
                         ticket.inactivityNotify = true
                         ticket.update()
                         return@forEach
@@ -198,7 +199,7 @@ object TicketPart : DiscordModulePart() {
                 tickets[ticket.id] = ticket
 
                 it.createMessage(
-                    config.ticketWelcomeMessages, user, mutableMapOf(
+                    config.ticketWelcomeMessage, user, mutableMapOf(
                         "user" to user.mention,
                         "close_emoji" to config.closeEmoji.mention(),
                         "confirm_emoji" to config.confirmEmoji.mention()
@@ -276,7 +277,7 @@ object TicketPart : DiscordModulePart() {
         }
         val channel = mainGuild.getChannel(ticket.channelId.snowflake).asChannelOf<TextChannel>()
         if (interaction != null) {
-            interaction.respondEphemeral(config.closeConfirmMessages, user) {
+            interaction.respondEphemeral(config.closeConfirmMessage, user) {
                 {
                     button(ButtonStyle.Success, "TICKET_CLOSE_CONFIRM") {
                         emoji = config.confirmEmoji.partialEmoji()
@@ -293,7 +294,7 @@ object TicketPart : DiscordModulePart() {
             }
             archiveTicket(ticket, kord.getSelf())
         } else {
-            channel.createMessage(config.inactivityCloseMessages, user)
+            channel.createMessage(config.inactivityCloseMessage, user)
             archiveTicket(ticket, kord.getSelf())
         }
     }
@@ -485,6 +486,216 @@ object TicketPart : DiscordModulePart() {
                                         }
                                     }
                                 }
+                            }
+                        }
+                    }
+                    subCommand("inactivity_notify_message", "Set the inactivity notify message") {
+                        string("message", "The message to send") {
+                            required = false
+                        }
+                        perform(this@group, this) {
+                            ioScope.launch {
+                                val message = interaction.command.messages["message"]
+                                if (message == null) {
+                                    if (interaction.command.strings["message"] == null) {
+                                        interaction.respondEphemeral {
+                                            embed {
+                                                title = "Info | DustreanNET"
+                                                description = "The current inactivity notify message is:"
+                                                useDefaultDesign(interaction.user)
+                                            }
+                                        }
+                                        interaction.respondEphemeral(config.inactivityNotifyMessage, interaction.user)
+                                    } else {
+                                        interaction.respondEphemeral {
+                                            embed {
+                                                title = "Error | DustreanNET"
+                                                description = "The message is invalid! Please check your json syntax!"
+                                                color = Color(250, 0, 0)
+                                                useDefaultDesign(interaction.user)
+                                            }
+                                        }
+                                    }
+                                    return@launch
+                                }
+                                config.inactivityNotifyMessage = message
+                                ICoreAPI.INSTANCE.getConfigManager().saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description = "The inactivity notify message has been set to:"
+                                        useDefaultDesign(interaction.user)
+                                    }
+                                }
+                                interaction.respondEphemeral(message, interaction.user)
+                            }
+                        }
+                    }
+                    subCommand("inactivity_close_message", "Set the inactivity close message") {
+                        string("message", "The message to send") {
+                            required = false
+                        }
+                        perform(this@group, this) {
+                            ioScope.launch {
+                                val message = interaction.command.messages["message"]
+                                if (message == null) {
+                                    if (interaction.command.strings["message"] == null) {
+                                        interaction.respondEphemeral {
+                                            embed {
+                                                title = "Info | DustreanNET"
+                                                description = "The current inactivity close message is:"
+                                                useDefaultDesign(interaction.user)
+                                            }
+                                        }
+                                        interaction.respondEphemeral(config.inactivityCloseMessage, interaction.user)
+                                    } else {
+                                        interaction.respondEphemeral {
+                                            embed {
+                                                title = "Error | DustreanNET"
+                                                description = "The message is invalid! Please check your json syntax!"
+                                                color = Color(250, 0, 0)
+                                                useDefaultDesign(interaction.user)
+                                            }
+                                        }
+                                    }
+                                    return@launch
+                                }
+                                config.inactivityCloseMessage = message
+                                ICoreAPI.INSTANCE.getConfigManager().saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description = "The inactivity close message has been set to:"
+                                        useDefaultDesign(interaction.user)
+                                    }
+                                }
+                                interaction.respondEphemeral(message, interaction.user)
+                            }
+                        }
+                    }
+                    subCommand("close_confirm_message", "Set the close confirm message") {
+                        string("message", "The message to send") {
+                            required = false
+                        }
+                        perform(this@group, this) {
+                            ioScope.launch {
+                                val message = interaction.command.messages["message"]
+                                if (message == null) {
+                                    if (interaction.command.strings["message"] == null) {
+                                        interaction.respondEphemeral {
+                                            embed {
+                                                title = "Info | DustreanNET"
+                                                description = "The current close confirm message is:"
+                                                useDefaultDesign(interaction.user)
+                                            }
+                                        }
+                                        interaction.respondEphemeral(config.closeConfirmMessage, interaction.user)
+                                    } else {
+                                        interaction.respondEphemeral {
+                                            embed {
+                                                title = "Error | DustreanNET"
+                                                description = "The message is invalid! Please check your json syntax!"
+                                                color = Color(250, 0, 0)
+                                                useDefaultDesign(interaction.user)
+                                            }
+                                        }
+                                    }
+                                    return@launch
+                                }
+                                config.closeConfirmMessage = message
+                                ICoreAPI.INSTANCE.getConfigManager().saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description = "The close confirm message has been set to:"
+                                        useDefaultDesign(interaction.user)
+                                    }
+                                }
+                                interaction.respondEphemeral(message, interaction.user)
+                            }
+                        }
+                    }
+                    subCommand("welcome_message", "Set the welcome message") {
+                        message("message", "The message to send") {
+                            required = false
+                        }
+                        perform(this@group, this) {
+                            ioScope.launch {
+                                val message = interaction.command.messages["message"]
+                                if (message == null) {
+                                    if (interaction.command.strings["message"] == null) {
+                                        interaction.respondEphemeral {
+                                            embed {
+                                                title = "Info | DustreanNET"
+                                                description = "The current welcome message is:"
+                                                useDefaultDesign(interaction.user)
+                                            }
+                                        }
+                                        interaction.respondEphemeral(config.ticketWelcomeMessage, interaction.user)
+                                    } else {
+                                        interaction.respondEphemeral {
+                                            embed {
+                                                title = "Error | DustreanNET"
+                                                description = "The message is invalid! Please check your json syntax!"
+                                                color = Color(250, 0, 0)
+                                                useDefaultDesign(interaction.user)
+                                            }
+                                        }
+                                    }
+                                    return@launch
+                                }
+                                config.ticketWelcomeMessage = message
+                                ICoreAPI.INSTANCE.getConfigManager().saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description = "The welcome message has been set to:"
+                                        useDefaultDesign(interaction.user)
+                                    }
+                                }
+                                interaction.respondEphemeral(message, interaction.user)
+                            }
+                        }
+                    }
+                    subCommand("confirm_essage", "Set the ticket rule config message") {
+                        message("message", "The message to send") {
+                            required = false
+                        }
+                        perform(this@group, this) {
+                            ioScope.launch {
+                                val message = interaction.command.messages["message"]
+                                if (message == null) {
+                                    if (interaction.command.strings["message"] == null) {
+                                        interaction.respondEphemeral {
+                                            embed {
+                                                title = "Info | DustreanNET"
+                                                description = "The current ticket rule config message is:"
+                                                useDefaultDesign(interaction.user)
+                                            }
+                                        }
+                                        interaction.respondEphemeral(config.confirmMessage, interaction.user)
+                                    } else {
+                                        interaction.respondEphemeral {
+                                            embed {
+                                                title = "Error | DustreanNET"
+                                                description = "The message is invalid! Please check your json syntax!"
+                                                color = Color(250, 0, 0)
+                                                useDefaultDesign(interaction.user)
+                                            }
+                                        }
+                                    }
+                                    return@launch
+                                }
+                                config.confirmMessage = message
+                                ICoreAPI.INSTANCE.getConfigManager().saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description = "The ticket rule config message has been set to:"
+                                        useDefaultDesign(interaction.user)
+                                    }
+                                }
+                                interaction.respondEphemeral(message, interaction.user)
                             }
                         }
                     }
