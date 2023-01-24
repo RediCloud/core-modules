@@ -6,7 +6,7 @@ import dev.kord.common.entity.Snowflake
 @CommandAnnotations.TopLevel.CommandDsl
 interface CommandBuilder {
     val name: String
-    val guildID: Snowflake
+    val guildID: Snowflake?
     var permissions: Permissions
 
     suspend fun create()

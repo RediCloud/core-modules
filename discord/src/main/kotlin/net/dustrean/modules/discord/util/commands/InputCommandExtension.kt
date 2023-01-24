@@ -43,7 +43,7 @@ private val commands = mutableListOf<InputCommandBuilder>()
  */
 @CommandAnnotations.TopLevel.CommandDsl
 open class InputCommandBuilder(
-    override val name: String, override val guildID: Snowflake, private val description: String
+    override val name: String, override val guildID: Snowflake?, private val description: String
 ) : CommandBuilder {
 
     init {
@@ -81,6 +81,16 @@ open class InputCommandBuilder(
     }
 
     override suspend fun create() {
+        if (guildID != null) {
+            create(guildID!!)
+            return
+        }
+        kord.guilds.collect() {
+            create(it.id)
+        }
+    }
+
+    private suspend fun create(guildID: Snowflake) {
         kord.createGuildChatInputCommand(guildID, name, description) {
             defaultMemberPermissions = permissions
             subCommands.forEach { (name, description, builder) ->

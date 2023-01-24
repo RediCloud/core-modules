@@ -4,6 +4,7 @@ import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.event.interaction.GuildMessageCommandInteractionCreateEvent
 import dev.kord.core.on
+import kotlinx.coroutines.flow.collect
 import net.dustrean.modules.discord.kord
 
 /**
@@ -11,7 +12,7 @@ import net.dustrean.modules.discord.kord
  * @param guildID The guild where the command should be work
  */
 @CommandAnnotations.TopLevel.CommandDsl
-class MessageCommandBuilder(override val name: String, override val guildID: Snowflake) : CommandBuilder {
+class MessageCommandBuilder(override val name: String, override val guildID: Snowflake?) : CommandBuilder {
 
     override var permissions = Permissions()
 
@@ -23,6 +24,16 @@ class MessageCommandBuilder(override val name: String, override val guildID: Sno
         }
 
     override suspend fun create() {
+        if (guildID != null) {
+            create(guildID)
+            return
+        }
+        kord.guilds.collect() {
+            create(it.id)
+        }
+    }
+
+    private suspend fun create(guildID: Snowflake) {
         kord.createGuildMessageCommand(guildID, name) {
             defaultMemberPermissions = permissions
         }
