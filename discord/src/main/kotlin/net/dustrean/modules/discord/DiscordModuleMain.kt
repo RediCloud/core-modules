@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.dustrean.api.ICoreAPI
 import net.dustrean.api.module.Module
+import net.dustrean.modules.discord.commands.*
 import net.dustrean.modules.discord.data.DiscordConfig
 import net.dustrean.modules.discord.data.chat.respondEphemeral
 import net.dustrean.modules.discord.part.parts
@@ -41,10 +42,13 @@ import net.dustrean.modules.discord.util.snowflake
 class DiscordModuleMain : Module() {
 
     companion object {
-        var CONFIG_COMMANDS: MutableMap<Snowflake, InputCommandBuilder> = mutableMapOf()
+        lateinit var INSTANCE: DiscordModuleMain
     }
 
+    var configCommands: MutableMap<Snowflake, InputCommandBuilder> = mutableMapOf()
+
     override fun onLoad(api: ICoreAPI) = runBlocking {
+        INSTANCE = this@DiscordModuleMain
         coreAPI = api
         configManager = api.getConfigManager()
         config = if (!configManager.exists("discord:bot")) {
@@ -84,7 +88,13 @@ class DiscordModuleMain : Module() {
                     println("${it.name} enabled")
                 }
 
-                CONFIG_COMMANDS.forEach { it.value.create() }
+                configCommands.forEach { it.value.create() }
+
+                COMMANDS.addAll(mutableListOf(StopCommand(), UpTimeCommand()))
+
+                COMMANDS.forEach { it.create() }
+
+                notifyStart()
             }
 
             launch {
@@ -98,6 +108,7 @@ class DiscordModuleMain : Module() {
 
     override fun onDisable(api: ICoreAPI) = runBlocking {
         try {
+            notifyStop()
             kord.logout()
         } catch (_: UninitializedPropertyAccessException) {
         }
@@ -139,7 +150,7 @@ class DiscordModuleMain : Module() {
 
     private suspend fun loadConfigCommand() {
         kord.guilds.collect {
-            CONFIG_COMMANDS[it.id] = inputCommand("config", it.id, "Edit discord bot configs") {
+            configCommands[it.id] = inputCommand("config", it.id, "Edit discord bot configs") {
                 permissions = Permissions(Permission.All)
                 group("test", "Test command") {
                     subCommand("embed", "Test embed") {
