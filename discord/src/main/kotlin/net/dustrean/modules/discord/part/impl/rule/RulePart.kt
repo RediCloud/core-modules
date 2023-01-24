@@ -4,7 +4,6 @@ import dev.kord.common.Color
 import dev.kord.common.entity.*
 import dev.kord.common.entity.optional.OptionalBoolean
 import dev.kord.core.behavior.channel.asChannelOf
-import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.edit
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.behavior.interaction.respondEphemeral
@@ -17,14 +16,16 @@ import dev.kord.rest.builder.interaction.boolean
 import dev.kord.rest.builder.interaction.channel
 import dev.kord.rest.builder.interaction.role
 import dev.kord.rest.builder.interaction.string
-import dev.kord.rest.builder.message.create.actionRow
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import kotlinx.coroutines.launch
 import net.dustrean.modules.discord.*
+import net.dustrean.modules.discord.data.chat.createMessage
 import net.dustrean.modules.discord.data.chat.emoji
 import net.dustrean.modules.discord.part.DiscordModulePart
 import net.dustrean.modules.discord.util.commands.CommandBuilder
+import net.dustrean.modules.discord.util.commands.message
+import net.dustrean.modules.discord.util.commands.messages
 import net.dustrean.modules.discord.util.interactions.button
 import net.dustrean.modules.discord.util.message.useDefaultDesign
 import net.dustrean.modules.discord.util.snowflake
@@ -76,7 +77,7 @@ object RulePart : DiscordModulePart() {
                             publicPermissions.second.add(it)
                         }
                     }
-                }else {
+                } else {
                     overwrites.add(overwrite)
                 }
             }
@@ -254,29 +255,54 @@ object RulePart : DiscordModulePart() {
                         perform(this@group, this@subCommand) {
                             ioScope.launch {
                                 val channelBehavior = interaction.command.channels["channel"] ?: interaction.channel
-                                channelBehavior.asChannelOf<GuildMessageChannel>().createMessage {
-                                    config.ruleMessages.forEach { rule ->
-                                        embed {
-                                            color = Color(rule.color)
-                                            title = rule.title
-                                            description = rule.description
-                                        }
-                                    }
-                                    actionRow {
-                                        button(ButtonStyle.Success, "rule_trigger") {
-                                            emoji = config.acceptEmoji.partialEmoji()
-                                        }
-                                    }
-                                }.also {
-
-                                    ioScope.launch {
-                                        this@perform.interaction.respondEphemeral {
-                                            embed {
-                                                title = "Info | DustreanNET"
-                                                description = "Rule message created in ${channelBehavior.mention}"
-                                                useDefaultDesign(this@perform.interaction.user)
+                                channelBehavior.asChannelOf<GuildMessageChannel>()
+                                    .createMessage(config.ruleMessage, interaction.user, mutableMapOf()) {
+                                        {
+                                            button(ButtonStyle.Success, "rule_trigger") {
+                                                emoji = config.acceptEmoji.partialEmoji()
                                             }
                                         }
+                                    }.also {
+                                        ioScope.launch {
+                                            this@perform.interaction.respondEphemeral {
+                                                embed {
+                                                    title = "Info | DustreanNET"
+                                                    description = "Rule message created in ${channelBehavior.mention}"
+                                                    useDefaultDesign(this@perform.interaction.user)
+                                                }
+                                            }
+                                        }
+                                    }
+                            }
+                        }
+                    }
+                    subCommand("rules", "The rule message") {
+                        message("message", "The rule message") {
+                            required = true
+                        }
+                        perform(this@group, this@subCommand) {
+                            val message = interaction.command.messages["message"]
+                            if (message == null) {
+                                ioScope.launch {
+                                    interaction.respondEphemeral {
+                                        embed {
+                                            title = "Error | DustreanNET"
+                                            description = "The message is invalid! Please check the json format!"
+                                            color = Color(250, 0, 0)
+                                            useDefaultDesign(interaction.user)
+                                        }
+                                    }
+                                }
+                                return@perform
+                            }
+                            ioScope.launch {
+                                config.ruleMessage = message
+                                configManager.saveConfig(config)
+                                interaction.respondEphemeral {
+                                    embed {
+                                        title = "Info | DustreanNET"
+                                        description = "The rule message was set!"
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
