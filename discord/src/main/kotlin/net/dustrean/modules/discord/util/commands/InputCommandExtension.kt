@@ -1,20 +1,14 @@
 package net.dustrean.modules.discord.util.commands
 
-import dev.kord.common.annotation.KordDsl
-import dev.kord.common.entity.ApplicationCommandOptionType
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.interaction.InteractionCommand
 import dev.kord.core.event.interaction.GuildChatInputCommandInteractionCreateEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.interaction.*
-import kotlinx.coroutines.Job
 import net.dustrean.modules.discord.data.chat.Message
 import net.dustrean.modules.discord.data.chat.toMessage
 import net.dustrean.modules.discord.kord
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 private val listener = kord.on<GuildChatInputCommandInteractionCreateEvent> {
     commands.forEach {
@@ -43,7 +37,7 @@ private val commands = mutableListOf<InputCommandBuilder>()
  * @param description The description which is displayed when tabbing
  */
 @CommandAnnotations.TopLevel.CommandDsl
-class InputCommandBuilder(
+open class InputCommandBuilder(
     override val name: String, override val guildID: Snowflake, private val description: String
 ) : CommandBuilder {
 
@@ -61,8 +55,12 @@ class InputCommandBuilder(
         mutableMapOf<String, ((GuildChatInputCommandInteractionCreateEvent) -> Unit)?>()
 
     @CommandAnnotations.BuildLevel.RunsDsl
-    fun perform(groupContext: GroupCommandBuilder? = null, context: SubCommandBuilder, event: GuildChatInputCommandInteractionCreateEvent.() -> Unit) {
-        var key = context.name
+    fun perform(groupContext: GroupCommandBuilder? = null, context: SubCommandBuilder? = null, event: GuildChatInputCommandInteractionCreateEvent.() -> Unit) {
+        if (groupContext == null && context == null) {
+            actions["_default"] = event
+            return
+        }
+        var key = context!!.name
         if (groupContext != null) key = "${groupContext.name}_$key"
         actions[key] = event
     }
