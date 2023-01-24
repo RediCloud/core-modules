@@ -21,9 +21,20 @@ class PopUpBuilder(val customID: String) {
 }
 
 inline fun ActionRowBuilder.popUp(
-    style: TextInputStyle, customID: InteractionCommandID, label: String, crossinline builder: PopUpBuilder.() -> Unit
-) = textInput(style, customID.id, label) {
-    val built = PopUpBuilder(customID.id).apply(builder)
+    style: TextInputStyle, customId: Enum<*>, label: String, crossinline builder: PopUpBuilder.() -> Unit
+) = textInput(style, customId.name, label) {
+    val built = PopUpBuilder(customId.name).apply(builder)
+    allowedLength = built.length
+    placeholder = built.placeholder
+    value = built.value
+    required = built.required
+    disabled = built.disabled
+}
+
+inline fun ActionRowBuilder.popUp(
+    style: TextInputStyle, customId: String, label: String, crossinline builder: PopUpBuilder.() -> Unit
+) = textInput(style, customId, label) {
+    val built = PopUpBuilder(customId).apply(builder)
     allowedLength = built.length
     placeholder = built.placeholder
     value = built.value

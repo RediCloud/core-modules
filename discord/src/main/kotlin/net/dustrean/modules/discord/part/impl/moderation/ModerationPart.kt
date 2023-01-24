@@ -24,7 +24,7 @@ import kotlinx.coroutines.runBlocking
 import net.dustrean.modules.discord.*
 import net.dustrean.modules.discord.part.DiscordModulePart
 import net.dustrean.modules.discord.util.commands.CommandBuilder
-import net.dustrean.modules.discord.util.message.useDefaultFooter
+import net.dustrean.modules.discord.util.message.useDefaultDesign
 import net.dustrean.modules.discord.util.snowflake
 
 object ModerationPart : DiscordModulePart() {
@@ -186,7 +186,7 @@ object ModerationPart : DiscordModulePart() {
                                         title = "Auto Chat Moderation | DustreanNET"
                                         description =
                                             "Auto chat moderation is now ${if (config.autoModeration) "enabled" else "disabled"}"
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -202,7 +202,7 @@ object ModerationPart : DiscordModulePart() {
                                         title = "Auto Chat Moderation | DustreanNET"
                                         description =
                                             "Auto chat moderation for new channels is now ${if (config.addNewChannelsToAutoModeration) "enabled" else "disabled"}"
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -218,7 +218,7 @@ object ModerationPart : DiscordModulePart() {
                                         title = "Auto Chat Moderation | DustreanNET"
                                         description =
                                             "Auto chat moderation for other bots is now ${if (config.moderateOtherBots) "enabled" else "disabled"}"
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -236,7 +236,7 @@ object ModerationPart : DiscordModulePart() {
                                         embed {
                                             title = "Auto Chat Moderation | DustreanNET"
                                             description = "Channel is already in auto chat moderation"
-                                            useDefaultFooter(interaction.user)
+                                            useDefaultDesign(interaction.user)
                                         }
                                     }
                                     return@launch
@@ -247,7 +247,7 @@ object ModerationPart : DiscordModulePart() {
                                     embed {
                                         title = "Auto Chat Moderation | DustreanNET"
                                         description = "Channel ${channel.mention} added to auto chat moderation"
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -265,7 +265,7 @@ object ModerationPart : DiscordModulePart() {
                                         embed {
                                             title = "Auto Chat Moderation | DustreanNET"
                                             description = "Channel is not in auto chat moderation"
-                                            useDefaultFooter(interaction.user)
+                                            useDefaultDesign(interaction.user)
                                         }
                                     }
                                     return@launch
@@ -276,7 +276,7 @@ object ModerationPart : DiscordModulePart() {
                                     embed {
                                         title = "Auto Chat Moderation | DustreanNET"
                                         description = "Channel ${channel.mention} removed from auto chat moderation"
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -311,7 +311,7 @@ object ModerationPart : DiscordModulePart() {
                                                 }
                                             }
                                         }
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -333,7 +333,7 @@ object ModerationPart : DiscordModulePart() {
                                         title = "Log Message Edits | DustreanNET"
                                         description =
                                             "Log message edits is now ${if (config.logEdits) "enabled" else "disabled"}"
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -349,7 +349,7 @@ object ModerationPart : DiscordModulePart() {
                                         title = "Log Message Edits | DustreanNET"
                                         description =
                                             "Log message edits for new channels is now ${if (config.addNewChannelsToLogEdits) "enabled" else "disabled"}"
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -365,7 +365,7 @@ object ModerationPart : DiscordModulePart() {
                                         title = "Log Message Edits | DustreanNET"
                                         description =
                                             "Log message edits for other bots is now ${if (config.logBotEdits) "enabled" else "disabled"}"
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -383,7 +383,7 @@ object ModerationPart : DiscordModulePart() {
                                         embed {
                                             title = "Log Message Edits | DustreanNET"
                                             description = "Channel is already in log message edits"
-                                            useDefaultFooter(interaction.user)
+                                            useDefaultDesign(interaction.user)
                                         }
                                     }
                                     return@launch
@@ -394,7 +394,7 @@ object ModerationPart : DiscordModulePart() {
                                     embed {
                                         title = "Log Message Edits | DustreanNET"
                                         description = "Channel ${channel.mention} added to log message edits"
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -412,7 +412,7 @@ object ModerationPart : DiscordModulePart() {
                                         embed {
                                             title = "Log Message Edits | DustreanNET"
                                             description = "Channel is not in log message edits"
-                                            useDefaultFooter(interaction.user)
+                                            useDefaultDesign(interaction.user)
                                         }
                                     }
                                     return@launch
@@ -423,7 +423,7 @@ object ModerationPart : DiscordModulePart() {
                                     embed {
                                         title = "Log Message Edits | DustreanNET"
                                         description = "Channel ${channel.mention} removed from log message edits"
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -454,7 +454,7 @@ object ModerationPart : DiscordModulePart() {
                                                 }
                                             }
                                         }
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -472,7 +472,7 @@ object ModerationPart : DiscordModulePart() {
                                         title = "Log Message Deletes | DustreanNET"
                                         description =
                                             "Log message deletes is now ${if (config.logDeletes) "enabled" else "disabled"}"
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -488,7 +488,7 @@ object ModerationPart : DiscordModulePart() {
                                         title = "Log Message Deletes | DustreanNET"
                                         description =
                                             "Log message deletes for new channels is now ${if (config.addNewChannelsToDeletes) "enabled" else "disabled"}"
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -504,7 +504,7 @@ object ModerationPart : DiscordModulePart() {
                                         title = "Log Message Deletes | DustreanNET"
                                         description =
                                             "Log message deletes for other bots is now ${if (config.logDeletes) "enabled" else "disabled"}"
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -522,7 +522,7 @@ object ModerationPart : DiscordModulePart() {
                                         embed {
                                             title = "Log Message Deletes | DustreanNET"
                                             description = "Channel is already in log message deletes"
-                                            useDefaultFooter(interaction.user)
+                                            useDefaultDesign(interaction.user)
                                         }
                                     }
                                     return@launch
@@ -533,7 +533,7 @@ object ModerationPart : DiscordModulePart() {
                                     embed {
                                         title = "Log Message Deletes | DustreanNET"
                                         description = "Channel ${channel.mention} added to log message deletes"
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -551,7 +551,7 @@ object ModerationPart : DiscordModulePart() {
                                         embed {
                                             title = "Log Message Deletes | DustreanNET"
                                             description = "Channel is not in log message deletes"
-                                            useDefaultFooter(interaction.user)
+                                            useDefaultDesign(interaction.user)
                                         }
                                     }
                                     return@launch
@@ -562,7 +562,7 @@ object ModerationPart : DiscordModulePart() {
                                     embed {
                                         title = "Log Message Deletes | DustreanNET"
                                         description = "Channel ${channel.mention} removed from log message deletes"
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }
@@ -589,7 +589,7 @@ object ModerationPart : DiscordModulePart() {
                                                 }
                                             }
                                         }
-                                        useDefaultFooter(interaction.user)
+                                        useDefaultDesign(interaction.user)
                                     }
                                 }
                             }

@@ -20,9 +20,19 @@ class SelectionMenuBuilder(val customID: String) {
 }
 
 inline fun ActionRowBuilder.selectionMenu(
-    customID: InteractionCommandID, crossinline builder: SelectionMenuBuilder.() -> Unit
-) = selectMenu(customID.id) {
-    val built = SelectionMenuBuilder(customID.id).apply(builder)
+    customId: String, crossinline builder: SelectionMenuBuilder.() -> Unit
+) = selectMenu(customId) {
+    val built = SelectionMenuBuilder(customId).apply(builder)
+    allowedValues = built.allowedValues
+    options += built.options
+    placeholder = built.placeholder
+    disabled = built.disabled
+}
+
+inline fun ActionRowBuilder.selectionMenu(
+    customId: Enum<*>, crossinline builder: SelectionMenuBuilder.() -> Unit
+) = selectMenu(customId.name) {
+    val built = SelectionMenuBuilder(customId.name).apply(builder)
     allowedValues = built.allowedValues
     options += built.options
     placeholder = built.placeholder

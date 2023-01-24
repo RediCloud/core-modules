@@ -1,21 +1,33 @@
 package net.dustrean.modules.discord.util.commands
 
+import dev.kord.common.annotation.KordDsl
+import dev.kord.common.entity.ApplicationCommandOptionType
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.entity.interaction.InteractionCommand
 import dev.kord.core.event.interaction.GuildChatInputCommandInteractionCreateEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.interaction.*
 import kotlinx.coroutines.Job
+import net.dustrean.modules.discord.data.chat.Message
+import net.dustrean.modules.discord.data.chat.toMessage
 import net.dustrean.modules.discord.kord
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 private val listener = kord.on<GuildChatInputCommandInteractionCreateEvent> {
     commands.forEach {
-        if (interaction.command.rootName != it.name) return@on
+        if (interaction.command.rootName != it.name) return@forEach
         val data = interaction.command.data
         val options = data.options.value
         options?.forEach{ optionData ->
             val groupName = optionData.name
-            if (optionData.subCommands.value == null || optionData.subCommands.value!!.isEmpty()) return@on
+            if (optionData.subCommands.value == null || optionData.subCommands.value!!.isEmpty()) {
+                val perform = it.actions[groupName] ?: return@on //group name is here the subcommand name
+                perform(this)
+                return@on
+            }
             val subCommandName = optionData.subCommands.value!![0].name
             val perform = it.actions["${groupName}_${subCommandName}"] ?: return@on
             perform(this)
@@ -84,3 +96,22 @@ class InputCommandBuilder(
 inline fun inputCommand(
     name: String, guildID: Snowflake, description: String, crossinline builder: InputCommandBuilder.() -> Unit
 ) = InputCommandBuilder(name, guildID, description).apply(builder)
+
+fun BaseInputChatBuilder.message(name: String, description: String, builder: StringChoiceBuilder.() -> Unit = {}) {
+    string(name, description, builder)
+}
+
+val InteractionCommand.messages: Map<String, Message> get() {
+    val map = mutableMapOf<String, Message>()
+    strings.forEach { (name, value) ->
+        if (!value.startsWith("{") || !value.endsWith("}")) return@forEach
+        try {
+            val message = toMessage(value)
+            map[name] = message
+        }catch (e: Exception) {
+            e.printStackTrace()
+            return@forEach
+        }
+    }
+    return map
+}
