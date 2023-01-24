@@ -15,7 +15,12 @@ private val listener = kord.on<GuildChatInputCommandInteractionCreateEvent> {
         if (interaction.command.rootName != it.name) return@forEach
         val data = interaction.command.data
         val options = data.options.value
-        options?.forEach{ optionData ->
+        if (options.isNullOrEmpty()) {
+            val perform = it.actions["_default"] ?: return@on
+            perform(this)
+            return@on
+        }
+        options.forEach{ optionData ->
             val groupName = optionData.name
             if (optionData.subCommands.value == null || optionData.subCommands.value!!.isEmpty()) {
                 val perform = it.actions[groupName] ?: return@on //group name is here the subcommand name
