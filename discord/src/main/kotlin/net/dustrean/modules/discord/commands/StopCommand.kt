@@ -52,7 +52,7 @@ suspend fun notifyStart() {
                     }\n" +
                     ":chains: Enabled parts: ${
                         parts.map { it.name }.joinToString(", ")
-                    }" +
+                    }\n" +
                     ":globe_with_meridians: Hostname: ${
                         if (System.getenv().containsKey("CORE_HOSTNAME")) {
                             System.getenv("CORE_HOSTNAME")
