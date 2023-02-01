@@ -94,7 +94,7 @@ enum class TicketIdentifierType {
                 val count = TicketPart.config.count
                 ioScope.launch {
                     TicketPart.config.count++
-                    ICoreAPI.INSTANCE.getConfigManager().saveConfig(TicketPart.config)
+                    ICoreAPI.INSTANCE.configManager.saveConfig(TicketPart.config)
                 }
                 count.toString()
             }

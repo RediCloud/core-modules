@@ -50,7 +50,7 @@ class DiscordModuleMain : Module() {
     override fun onLoad(api: ICoreAPI) = runBlocking {
         INSTANCE = this@DiscordModuleMain
         coreAPI = api
-        configManager = api.getConfigManager()
+        configManager = api.configManager
         config = if (!configManager.exists("discord:bot")) {
             val discordConfig = DiscordConfig()
             configManager.createConfig(discordConfig)

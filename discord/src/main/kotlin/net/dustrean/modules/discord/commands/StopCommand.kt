@@ -44,7 +44,7 @@ suspend fun notifyStart() {
         embed {
             title = "Status | DustreanNET"
             description = ":green_square: State: Started\n" +
-                    ":electric_plug: Version: ${ICoreAPI.INSTANCE.getCoreVersion()}\n" +
+                    ":electric_plug: Version: Unknown\n" +
                     ":calendar: Date: ${
                         java.time.LocalDateTime.now().format(
                             java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")

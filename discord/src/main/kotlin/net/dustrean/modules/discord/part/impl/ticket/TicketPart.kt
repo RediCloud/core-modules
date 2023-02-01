@@ -53,15 +53,15 @@ object TicketPart : DiscordModulePart() {
 
     override val name = "Ticket"
     val tickets: ExternalRMap<UUID, Ticket> =
-        ICoreAPI.INSTANCE.getRedisConnection().getRedissonClient().getExternalMap("module-data:discord:ticket:tickets")
+        ICoreAPI.INSTANCE.redisConnection.getRedissonClient().getExternalMap("module-data:discord:ticket:tickets")
     lateinit var config: TicketConfig
 
     override suspend fun init() {
-        if (ICoreAPI.INSTANCE.getConfigManager().exists("discord:modules:ticket")) {
-            config = ICoreAPI.INSTANCE.getConfigManager().getConfig("discord:modules:ticket", TicketConfig::class.java)
+        if (ICoreAPI.INSTANCE.configManager.exists("discord:modules:ticket")) {
+            config = ICoreAPI.INSTANCE.configManager.getConfig("discord:modules:ticket", TicketConfig::class.java)
         } else {
             config = TicketConfig()
-            ICoreAPI.INSTANCE.getConfigManager().createConfig(config)
+            ICoreAPI.INSTANCE.configManager.createConfig(config)
         }
         loadConfigCommand()
         startScheduler()
@@ -476,7 +476,7 @@ object TicketPart : DiscordModulePart() {
                                     }
                                 }.also {
                                     config.openMessages.add(it.id.value.toLong())
-                                    ICoreAPI.INSTANCE.getConfigManager().saveConfig(config)
+                                    ICoreAPI.INSTANCE.configManager.saveConfig(config)
                                     interaction.respondEphemeral {
                                         embed {
                                             title = "Info | DustreanNET"
@@ -519,7 +519,7 @@ object TicketPart : DiscordModulePart() {
                                     return@launch
                                 }
                                 config.inactivityNotifyMessage = message
-                                ICoreAPI.INSTANCE.getConfigManager().saveConfig(config)
+                                ICoreAPI.INSTANCE.configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
                                         title = "Info | DustreanNET"
@@ -561,7 +561,7 @@ object TicketPart : DiscordModulePart() {
                                     return@launch
                                 }
                                 config.inactivityCloseMessage = message
-                                ICoreAPI.INSTANCE.getConfigManager().saveConfig(config)
+                                ICoreAPI.INSTANCE.configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
                                         title = "Info | DustreanNET"
@@ -603,7 +603,7 @@ object TicketPart : DiscordModulePart() {
                                     return@launch
                                 }
                                 config.closeConfirmMessage = message
-                                ICoreAPI.INSTANCE.getConfigManager().saveConfig(config)
+                                ICoreAPI.INSTANCE.configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
                                         title = "Info | DustreanNET"
@@ -645,7 +645,7 @@ object TicketPart : DiscordModulePart() {
                                     return@launch
                                 }
                                 config.ticketWelcomeMessage = message
-                                ICoreAPI.INSTANCE.getConfigManager().saveConfig(config)
+                                ICoreAPI.INSTANCE.configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
                                         title = "Info | DustreanNET"
@@ -687,7 +687,7 @@ object TicketPart : DiscordModulePart() {
                                     return@launch
                                 }
                                 config.confirmMessage = message
-                                ICoreAPI.INSTANCE.getConfigManager().saveConfig(config)
+                                ICoreAPI.INSTANCE.configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
                                         title = "Info | DustreanNET"
