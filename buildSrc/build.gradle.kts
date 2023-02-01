@@ -23,7 +23,7 @@ dependencies {
     fun pluginDep(id: String, version: String) = "${id}:${id}.gradle.plugin:${version}"
     val kotlinVersion = "1.8.0"
 
-    implementation(pluginDep("net.dustrean.libloader", "1.5.4"))
+    implementation(pluginDep("net.dustrean.libloader", "1.6.2"))
 
     compileOnly(kotlin("gradle-plugin", embeddedKotlinVersion))
     runtimeOnly(kotlin("gradle-plugin", kotlinVersion))
