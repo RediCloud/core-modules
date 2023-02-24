@@ -2,6 +2,7 @@ package dev.redicloud.core.modules.discord.commands
 
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.rest.builder.message.create.embed
+import dev.redicloud.api.utils.networkName
 import dev.redicloud.core.modules.discord.ioScope
 import kotlinx.coroutines.launch
 import dev.redicloud.core.modules.discord.util.message.useDefaultDesign

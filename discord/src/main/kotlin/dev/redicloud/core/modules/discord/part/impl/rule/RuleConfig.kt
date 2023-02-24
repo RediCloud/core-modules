@@ -1,5 +1,6 @@
 package dev.redicloud.core.modules.discord.part.impl.rule
 
+import dev.redicloud.api.utils.networkName
 import dev.redicloud.core.modules.discord.data.AbstractDiscordConfig
 import dev.redicloud.core.modules.discord.data.chat.Emoji
 import dev.redicloud.core.modules.discord.data.chat.Message
