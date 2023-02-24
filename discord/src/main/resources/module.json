@@ -1,8 +1,8 @@
 {
   "name": "Discord Bot",
-  "description": "The module which provides the discord bot to the discord server",
-  "version": "1.0.0",
+  "description": "The module which provides the discord bot",
+  "version": "1.0.0-SNAPSHOT",
   "mainClasses": {
-    "STANDALONE": "net.dustrean.modules.discord.DiscordModuleMain"
+    "STANDALONE": "dev.redicloud.core.modules.discord.DiscordModuleMain"
   }
 }
