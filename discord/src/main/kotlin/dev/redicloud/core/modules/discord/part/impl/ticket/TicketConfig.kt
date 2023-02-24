@@ -2,14 +2,16 @@ package dev.redicloud.core.modules.discord.part.impl.ticket
 
 import dev.kord.core.entity.User
 import dev.redicloud.api.ICoreAPI
+import dev.redicloud.core.modules.discord.data.AbstractDiscordConfig
 import dev.redicloud.core.modules.discord.data.chat.embed
 import dev.redicloud.core.modules.discord.data.chat.Emoji
 import dev.redicloud.core.modules.discord.data.chat.message
+import dev.redicloud.core.modules.discord.ioScope
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
 
-class TicketConfig() : dev.redicloud.core.modules.discord.data.AbstractDiscordConfig() {
+class TicketConfig() : AbstractDiscordConfig() {
 
     override val key = "discord:modules:ticket"
     var openMessages = mutableListOf<Long>()
@@ -90,7 +92,7 @@ enum class TicketIdentifierType {
             USER_ID -> user.id.value.toString()
             NUMBER -> {
                 val count = TicketPart.config.count
-                dev.redicloud.core.modules.discord.ioScope.launch {
+                ioScope.launch {
                     TicketPart.config.count++
                     ICoreAPI.INSTANCE.configManager.saveConfig(TicketPart.config)
                 }

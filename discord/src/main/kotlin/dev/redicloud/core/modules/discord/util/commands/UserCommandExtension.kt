@@ -18,7 +18,7 @@ class UserCommandBuilder(override val name: String, override val guildID: Snowfl
 
     @CommandAnnotations.BuildLevel.RunsDsl
     inline fun perform(crossinline event: GuildUserCommandInteractionCreateEvent.() -> Unit) =
-        dev.redicloud.core.modules.discord.kord.on<GuildUserCommandInteractionCreateEvent> {
+        kord.on<GuildUserCommandInteractionCreateEvent> {
             if (interaction.invokedCommandName != name) return@on
             event()
         }
@@ -28,13 +28,13 @@ class UserCommandBuilder(override val name: String, override val guildID: Snowfl
             create(guildID)
             return
         }
-        dev.redicloud.core.modules.discord.kord.guilds.collect() {
+        kord.guilds.collect() {
             create(it.id)
         }
     }
 
     private suspend fun create(guildID: Snowflake) {
-        dev.redicloud.core.modules.discord.kord.createGuildUserCommand(guildID, name) {
+        kord.createGuildUserCommand(guildID, name) {
             defaultMemberPermissions = permissions
         }
     }

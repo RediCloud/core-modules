@@ -8,10 +8,12 @@ import dev.kord.core.entity.User
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.launch
 import dev.redicloud.api.ICoreAPI
+import dev.redicloud.core.modules.discord.DiscordModuleMain
+import dev.redicloud.core.modules.discord.logChannel
 import dev.redicloud.core.modules.discord.part.parts
 import dev.redicloud.core.modules.discord.util.message.useDefaultDesign
 
-class StopCommand() : dev.redicloud.core.modules.discord.commands.AbstractInputCommand("stop", null, "Stop the bot") {
+class StopCommand() : AbstractInputCommand("stop", null, "Stop the bot") {
 
     init {
         permissions = Permissions(Permission.All)
@@ -24,8 +26,8 @@ class StopCommand() : dev.redicloud.core.modules.discord.commands.AbstractInputC
                         useDefaultDesign(interaction.user)
                     }
                 }
-                dev.redicloud.core.modules.discord.commands.notifyStop(interaction.user)
-                dev.redicloud.core.modules.discord.DiscordModuleMain.INSTANCE.onDisable(ICoreAPI.INSTANCE)
+                notifyStop(interaction.user)
+                DiscordModuleMain.INSTANCE.onDisable(ICoreAPI.INSTANCE)
             }
         }
     }
@@ -36,7 +38,7 @@ val started = System.currentTimeMillis()
 var stopped = false
 
 suspend fun notifyStart() {
-    dev.redicloud.core.modules.discord.logChannel.createMessage {
+    logChannel.createMessage {
         embed {
             title = "Status | DustreanNET"
             description = ":green_square: State: Started\n" +
@@ -61,9 +63,9 @@ suspend fun notifyStart() {
 }
 
 suspend fun notifyStop(user: User? = null) {
-    if (dev.redicloud.core.modules.discord.commands.stopped) return
-    dev.redicloud.core.modules.discord.commands.stopped = true
-    dev.redicloud.core.modules.discord.logChannel.createMessage {
+    if (stopped) return
+    stopped = true
+    logChannel.createMessage {
         embed {
             title = "Status | DustreanNET"
             description = ":red_square: State: Stopping\n" +
@@ -73,7 +75,7 @@ suspend fun notifyStop(user: User? = null) {
                         )
                     }\n" +
                     ":clock1: Uptime: ${
-                        java.time.Duration.ofMillis(System.currentTimeMillis() - dev.redicloud.core.modules.discord.commands.started).toHours()
+                        java.time.Duration.ofMillis(System.currentTimeMillis() - started).toHours()
                     } minutes\n" +
                     ":globe_with_meridians: Hostname: ${
                         if (System.getenv().containsKey("CORE_HOSTNAME")) {

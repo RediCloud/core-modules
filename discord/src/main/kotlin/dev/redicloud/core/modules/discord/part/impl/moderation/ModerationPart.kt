@@ -136,7 +136,7 @@ object ModerationPart : DiscordModulePart() {
         val oldMessage = old?.asMessageOrNull() ?: return@on
         val newMessage = message.asMessageOrNull() ?: return@on
 
-        dev.redicloud.core.modules.discord.logChannel.asChannelOf<TextChannel>().createMessage {
+        logChannel.asChannelOf<TextChannel>().createMessage {
             embed {
                 title = "Message Edited | DustreanNET"
                 color = Color(250, 0, 0)
@@ -159,7 +159,7 @@ object ModerationPart : DiscordModulePart() {
     private val logDeletes = kord.on<MessageDeleteEvent> {
         if (!config.logDeletesInChannels.contains(messageId.value.toLong())) return@on
 
-        dev.redicloud.core.modules.discord.logChannel.asChannelOf<TextChannel>().createMessage {
+        logChannel.asChannelOf<TextChannel>().createMessage {
             embed {
                 title = "Message Deleted | DustreanNET"
                 color = Color(250, 0, 0)
