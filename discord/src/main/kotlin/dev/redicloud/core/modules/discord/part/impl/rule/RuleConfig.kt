@@ -11,7 +11,7 @@ class RuleConfig() : AbstractDiscordConfig() {
     var ruleMessage: Message = message {
         embed {
             defaultDesign = true
-            title = "Rules | DustreanNET"
+            title = "Rules | $networkName"
             description = "The discord Terms of Service and Community Guidelines apply to this server. Please read them carefully."
         }
     }

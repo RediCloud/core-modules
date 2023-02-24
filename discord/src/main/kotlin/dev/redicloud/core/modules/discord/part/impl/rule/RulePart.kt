@@ -18,6 +18,7 @@ import dev.kord.rest.builder.interaction.role
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
+import dev.redicloud.api.utils.networkName
 import kotlinx.coroutines.launch
 import dev.redicloud.core.modules.discord.*
 import dev.redicloud.core.modules.discord.data.chat.createMessage
@@ -134,7 +135,7 @@ object RulePart : DiscordModulePart() {
             member.removeRole(config.acceptRole.snowflake)
             response.respond {
                 embed {
-                    title = "Rules | DustreanNET"
+                    title = "Rules | $networkName"
                     description = "Your player role was revoked!"
                     useDefaultDesign(interaction.user)
                 }
@@ -148,7 +149,7 @@ object RulePart : DiscordModulePart() {
         if (!existsRole) {
             response.respond {
                 embed {
-                    title = "Error | DustreanNET"
+                    title = "Error | $networkName"
                     description = "The role does not exist! Please contact an administrator!"
                     color = Color(250, 0, 0)
                     useDefaultDesign(interaction.user)
@@ -160,7 +161,7 @@ object RulePart : DiscordModulePart() {
         member.addRole(config.acceptRole.snowflake)
         response.respond {
             embed {
-                title = "Rules | DustreanNET"
+                title = "Rules | $networkName"
                 description = "The player role was added to you!"
                 useDefaultDesign(interaction.user)
             }
@@ -198,7 +199,7 @@ object RulePart : DiscordModulePart() {
                                     ioScope.launch {
                                         interaction.respondEphemeral {
                                             embed {
-                                                title = "Error | DustreanNET"
+                                                title = "Error | $networkName"
                                                 description = "The emoji is invalid! (`$emojiMention`)"
                                                 color = Color(250, 0, 0)
                                                 useDefaultDesign(interaction.user)
@@ -221,7 +222,7 @@ object RulePart : DiscordModulePart() {
                                 dev.redicloud.core.modules.discord.configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description = "The accept emoji was set to $emojiMention"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -240,7 +241,7 @@ object RulePart : DiscordModulePart() {
                                 dev.redicloud.core.modules.discord.configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description = "The accept role was set to ${role.mention}"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -266,7 +267,7 @@ object RulePart : DiscordModulePart() {
                                         dev.redicloud.core.modules.discord.ioScope.launch {
                                             this@perform.interaction.respondEphemeral {
                                                 embed {
-                                                    title = "Info | DustreanNET"
+                                                    title = "Info | $networkName"
                                                     description = "Rule message created in ${channelBehavior.mention}"
                                                     useDefaultDesign(this@perform.interaction.user)
                                                 }
@@ -286,7 +287,7 @@ object RulePart : DiscordModulePart() {
                                 dev.redicloud.core.modules.discord.ioScope.launch {
                                     interaction.respondEphemeral {
                                         embed {
-                                            title = "Error | DustreanNET"
+                                            title = "Error | $networkName"
                                             description = "The message is invalid! Please check the json format!"
                                             color = Color(250, 0, 0)
                                             useDefaultDesign(interaction.user)
@@ -300,7 +301,7 @@ object RulePart : DiscordModulePart() {
                                 dev.redicloud.core.modules.discord.configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description = "The rule message was set!"
                                         useDefaultDesign(interaction.user)
                                     }

@@ -1,4 +1,4 @@
-@file:OptIn(DelicateCoroutinesApi::class, PrivilegedIntent::class)
+@file:OptIn(PrivilegedIntent::class)
 
 package dev.redicloud.core.modules.discord
 
@@ -24,6 +24,8 @@ import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.message.create.embed
 import dev.redicloud.api.ICoreAPI
 import dev.redicloud.api.module.Module
+import dev.redicloud.api.utils.networkDomain
+import dev.redicloud.api.utils.networkName
 import dev.redicloud.core.modules.discord.commands.*
 import dev.redicloud.core.modules.discord.data.DiscordConfig
 import dev.redicloud.core.modules.discord.data.chat.respondEphemeral
@@ -33,7 +35,6 @@ import dev.redicloud.core.modules.discord.util.message.useDefaultDesign
 import dev.redicloud.core.modules.discord.util.snowflake
 import io.ktor.http.cio.*
 import io.ktor.http.content.*
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -41,7 +42,7 @@ import kotlinx.coroutines.runBlocking
 class DiscordModuleMain : Module() {
 
     companion object {
-        lateinit var INSTANCE: dev.redicloud.core.modules.discord.DiscordModuleMain
+        lateinit var INSTANCE: DiscordModuleMain
     }
 
     var configCommands: MutableMap<Snowflake, InputCommandBuilder> = mutableMapOf()
@@ -77,10 +78,10 @@ class DiscordModuleMain : Module() {
 
                 kord.editPresence {
                     status = PresenceStatus.Online
-                    playing("on dustrean.net")
+                    playing("on $networkDomain")
                 }
 
-                println("Enabling discord module dev.redicloud:")
+                println("Enabling discord module part:")
                 parts.forEach {
                     it.init()
                     it.commands.forEach { command -> command.create() }
@@ -184,7 +185,7 @@ class DiscordModuleMain : Module() {
                                 if (guild == null) {
                                     interaction.respondEphemeral {
                                         embed {
-                                            title = "Error | DustreanNET"
+                                            title = "Error | $networkName"
                                             description = "The guild with the id $id could not be found"
                                             color = Color(255, 0, 0)
                                             useDefaultDesign(interaction.user)
@@ -197,7 +198,7 @@ class DiscordModuleMain : Module() {
                                 configManager.saveConfig(config)
                                 logChannel.createMessage {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description =
                                             "The main guild was changed to ${guild.name} by ${interaction.user.asUser().mention}"
                                         useDefaultDesign(interaction.user)
@@ -205,7 +206,7 @@ class DiscordModuleMain : Module() {
                                 }
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description = "The main guild was changed to ${guild.name}"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -225,7 +226,7 @@ class DiscordModuleMain : Module() {
                                 if (guild == null) {
                                     interaction.respondEphemeral {
                                         embed {
-                                            title = "Error | DustreanNET"
+                                            title = "Error | $networkName"
                                             description = "The guild with the id $id could not be found"
                                             color = Color(255, 0, 0)
                                             useDefaultDesign(interaction.user)
@@ -238,7 +239,7 @@ class DiscordModuleMain : Module() {
                                 configManager.saveConfig(config)
                                 logChannel.createMessage {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description =
                                             "The team guild has been changed to ${guild.name} by ${interaction.user.asUser().mention}"
                                         useDefaultDesign(interaction.user)
@@ -246,7 +247,7 @@ class DiscordModuleMain : Module() {
                                 }
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description =
                                             "The team guild was changed to ${guild.name} by ${interaction.user.asUser().mention}"
                                         useDefaultDesign(interaction.user)
@@ -266,7 +267,7 @@ class DiscordModuleMain : Module() {
                                 configManager.saveConfig(config)
                                 logChannel.createMessage {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description =
                                             "The log channel has been changed to ${channel.mention} by ${interaction.user.asUser().mention}"
                                         useDefaultDesign(interaction.user)
@@ -274,7 +275,7 @@ class DiscordModuleMain : Module() {
                                 }
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description = "The log channel has been changed to ${channel.mention}"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -282,7 +283,7 @@ class DiscordModuleMain : Module() {
                                 logChannel = channel.asChannelOf()
                                 logChannel.createMessage {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description = "This is now the log channel!"
                                         useDefaultDesign(interaction.user)
                                     }

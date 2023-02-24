@@ -8,6 +8,7 @@ import dev.kord.core.entity.User
 import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.launch
 import dev.redicloud.api.ICoreAPI
+import dev.redicloud.api.utils.networkName
 import dev.redicloud.core.modules.discord.DiscordModuleMain
 import dev.redicloud.core.modules.discord.logChannel
 import dev.redicloud.core.modules.discord.part.parts
@@ -21,7 +22,7 @@ class StopCommand() : AbstractInputCommand("stop", null, "Stop the bot") {
             dev.redicloud.core.modules.discord.ioScope.launch {
                 interaction.respondEphemeral {
                     embed {
-                        title = "Stopping | DustreanNET"
+                        title = "Stopping | $networkName"
                         description = "Stopping the bot..."
                         useDefaultDesign(interaction.user)
                     }
@@ -40,7 +41,7 @@ var stopped = false
 suspend fun notifyStart() {
     logChannel.createMessage {
         embed {
-            title = "Status | DustreanNET"
+            title = "Status | $networkName"
             description = ":green_square: State: Started\n" +
                     ":electric_plug: Version: Unknown\n" +
                     ":calendar: Date: ${
@@ -67,7 +68,7 @@ suspend fun notifyStop(user: User? = null) {
     stopped = true
     logChannel.createMessage {
         embed {
-            title = "Status | DustreanNET"
+            title = "Status | $networkName"
             description = ":red_square: State: Stopping\n" +
                     ":calendar: Date: ${
                         java.time.LocalDateTime.now().format(

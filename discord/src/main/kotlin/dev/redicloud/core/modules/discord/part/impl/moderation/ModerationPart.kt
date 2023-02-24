@@ -19,6 +19,7 @@ import dev.kord.core.event.message.MessageUpdateEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.interaction.channel
 import dev.kord.rest.builder.message.create.embed
+import dev.redicloud.api.utils.networkName
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import dev.redicloud.core.modules.discord.*
@@ -68,7 +69,7 @@ object ModerationPart : DiscordModulePart() {
         if (violations.isEmpty()) return
         logChannel.createMessage {
             embed {
-                title = "Auto Moderation | DustreanNET"
+                title = "Auto Moderation | $networkName"
                 description =
                     "Message sent by ${message.author?.mention} in ${message.channel.asChannelOf<TextChannel>().mention} was flagged for the following reasons: ${
                         violations.joinToString(", ")
@@ -84,7 +85,7 @@ object ModerationPart : DiscordModulePart() {
         val dmChannel = author.getDmChannelOrNull() ?: return
         dmChannel.createMessage {
             embed {
-                title = "Chat Moderation | DustreanNET"
+                title = "Chat Moderation | $networkName"
                 color = Color(250, 0, 0)
                 description =
                     "Your messsage: ```${message.content}``` was flagged for the following ${if (violations.size == 1) "violation" else "violations"}: ${
@@ -138,7 +139,7 @@ object ModerationPart : DiscordModulePart() {
 
         logChannel.asChannelOf<TextChannel>().createMessage {
             embed {
-                title = "Message Edited | DustreanNET"
+                title = "Message Edited | $networkName"
                 color = Color(250, 0, 0)
                 url = "https://discord.com/channels/${
                     message.asMessage().getGuildOrNull()?.id?.value
@@ -161,7 +162,7 @@ object ModerationPart : DiscordModulePart() {
 
         logChannel.asChannelOf<TextChannel>().createMessage {
             embed {
-                title = "Message Deleted | DustreanNET"
+                title = "Message Deleted | $networkName"
                 color = Color(250, 0, 0)
                 description = "Message deleted in ${channel.mention} from ${message?.author?.mention}"
                 field {
@@ -183,7 +184,7 @@ object ModerationPart : DiscordModulePart() {
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Auto Chat Moderation | DustreanNET"
+                                        title = "Auto Chat Moderation | $networkName"
                                         description =
                                             "Auto chat moderation is now ${if (config.autoModeration) "enabled" else "disabled"}"
                                         useDefaultDesign(interaction.user)
@@ -199,7 +200,7 @@ object ModerationPart : DiscordModulePart() {
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Auto Chat Moderation | DustreanNET"
+                                        title = "Auto Chat Moderation | $networkName"
                                         description =
                                             "Auto chat moderation for new channels is now ${if (config.addNewChannelsToAutoModeration) "enabled" else "disabled"}"
                                         useDefaultDesign(interaction.user)
@@ -215,7 +216,7 @@ object ModerationPart : DiscordModulePart() {
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Auto Chat Moderation | DustreanNET"
+                                        title = "Auto Chat Moderation | $networkName"
                                         description =
                                             "Auto chat moderation for other bots is now ${if (config.moderateOtherBots) "enabled" else "disabled"}"
                                         useDefaultDesign(interaction.user)
@@ -234,7 +235,7 @@ object ModerationPart : DiscordModulePart() {
                                 if (config.chatModerationChannels.contains(channel.id.value.toLong())) {
                                     interaction.respondEphemeral {
                                         embed {
-                                            title = "Auto Chat Moderation | DustreanNET"
+                                            title = "Auto Chat Moderation | $networkName"
                                             description = "Channel is already in auto chat moderation"
                                             useDefaultDesign(interaction.user)
                                         }
@@ -245,7 +246,7 @@ object ModerationPart : DiscordModulePart() {
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Auto Chat Moderation | DustreanNET"
+                                        title = "Auto Chat Moderation | $networkName"
                                         description = "Channel ${channel.mention} added to auto chat moderation"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -263,7 +264,7 @@ object ModerationPart : DiscordModulePart() {
                                 if (!config.chatModerationChannels.contains(channel.id.value.toLong())) {
                                     interaction.respondEphemeral {
                                         embed {
-                                            title = "Auto Chat Moderation | DustreanNET"
+                                            title = "Auto Chat Moderation | $networkName"
                                             description = "Channel is not in auto chat moderation"
                                             useDefaultDesign(interaction.user)
                                         }
@@ -274,7 +275,7 @@ object ModerationPart : DiscordModulePart() {
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Auto Chat Moderation | DustreanNET"
+                                        title = "Auto Chat Moderation | $networkName"
                                         description = "Channel ${channel.mention} removed from auto chat moderation"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -287,7 +288,7 @@ object ModerationPart : DiscordModulePart() {
                             ioScope.launch {
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Auto Chat Moderation | DustreanNET"
+                                        title = "Auto Chat Moderation | $networkName"
                                         description =
                                             "Auto chat moderation is a feature that automatically moderates messages in the specified channels."
                                         field {
@@ -330,7 +331,7 @@ object ModerationPart : DiscordModulePart() {
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Log Message Edits | DustreanNET"
+                                        title = "Log Message Edits | $networkName"
                                         description =
                                             "Log message edits is now ${if (config.logEdits) "enabled" else "disabled"}"
                                         useDefaultDesign(interaction.user)
@@ -346,7 +347,7 @@ object ModerationPart : DiscordModulePart() {
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Log Message Edits | DustreanNET"
+                                        title = "Log Message Edits | $networkName"
                                         description =
                                             "Log message edits for new channels is now ${if (config.addNewChannelsToLogEdits) "enabled" else "disabled"}"
                                         useDefaultDesign(interaction.user)
@@ -362,7 +363,7 @@ object ModerationPart : DiscordModulePart() {
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Log Message Edits | DustreanNET"
+                                        title = "Log Message Edits | $networkName"
                                         description =
                                             "Log message edits for other bots is now ${if (config.logBotEdits) "enabled" else "disabled"}"
                                         useDefaultDesign(interaction.user)
@@ -381,7 +382,7 @@ object ModerationPart : DiscordModulePart() {
                                 if (config.logEditsInChannels.contains(channel.id.value.toLong())) {
                                     interaction.respondEphemeral {
                                         embed {
-                                            title = "Log Message Edits | DustreanNET"
+                                            title = "Log Message Edits | $networkName"
                                             description = "Channel is already in log message edits"
                                             useDefaultDesign(interaction.user)
                                         }
@@ -392,7 +393,7 @@ object ModerationPart : DiscordModulePart() {
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Log Message Edits | DustreanNET"
+                                        title = "Log Message Edits | $networkName"
                                         description = "Channel ${channel.mention} added to log message edits"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -410,7 +411,7 @@ object ModerationPart : DiscordModulePart() {
                                 if (!config.logEditsInChannels.contains(channel.id.value.toLong())) {
                                     interaction.respondEphemeral {
                                         embed {
-                                            title = "Log Message Edits | DustreanNET"
+                                            title = "Log Message Edits | $networkName"
                                             description = "Channel is not in log message edits"
                                             useDefaultDesign(interaction.user)
                                         }
@@ -421,7 +422,7 @@ object ModerationPart : DiscordModulePart() {
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Log Message Edits | DustreanNET"
+                                        title = "Log Message Edits | $networkName"
                                         description = "Channel ${channel.mention} removed from log message edits"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -434,7 +435,7 @@ object ModerationPart : DiscordModulePart() {
                             ioScope.launch {
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Log Message Edits | DustreanNET"
+                                        title = "Log Message Edits | $networkName"
                                         description =
                                             "Log message edits is a feature that logs all message edits in the specified channels."
                                         field {
@@ -469,7 +470,7 @@ object ModerationPart : DiscordModulePart() {
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Log Message Deletes | DustreanNET"
+                                        title = "Log Message Deletes | $networkName"
                                         description =
                                             "Log message deletes is now ${if (config.logDeletes) "enabled" else "disabled"}"
                                         useDefaultDesign(interaction.user)
@@ -485,7 +486,7 @@ object ModerationPart : DiscordModulePart() {
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Log Message Deletes | DustreanNET"
+                                        title = "Log Message Deletes | $networkName"
                                         description =
                                             "Log message deletes for new channels is now ${if (config.addNewChannelsToDeletes) "enabled" else "disabled"}"
                                         useDefaultDesign(interaction.user)
@@ -501,7 +502,7 @@ object ModerationPart : DiscordModulePart() {
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Log Message Deletes | DustreanNET"
+                                        title = "Log Message Deletes | $networkName"
                                         description =
                                             "Log message deletes for other bots is now ${if (config.logDeletes) "enabled" else "disabled"}"
                                         useDefaultDesign(interaction.user)
@@ -520,7 +521,7 @@ object ModerationPart : DiscordModulePart() {
                                 if (config.logDeletesInChannels.contains(channel.id.value.toLong())) {
                                     interaction.respondEphemeral {
                                         embed {
-                                            title = "Log Message Deletes | DustreanNET"
+                                            title = "Log Message Deletes | $networkName"
                                             description = "Channel is already in log message deletes"
                                             useDefaultDesign(interaction.user)
                                         }
@@ -531,7 +532,7 @@ object ModerationPart : DiscordModulePart() {
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Log Message Deletes | DustreanNET"
+                                        title = "Log Message Deletes | $networkName"
                                         description = "Channel ${channel.mention} added to log message deletes"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -549,7 +550,7 @@ object ModerationPart : DiscordModulePart() {
                                 if (!config.logDeletesInChannels.contains(channel.id.value.toLong())) {
                                     interaction.respondEphemeral {
                                         embed {
-                                            title = "Log Message Deletes | DustreanNET"
+                                            title = "Log Message Deletes | $networkName"
                                             description = "Channel is not in log message deletes"
                                             useDefaultDesign(interaction.user)
                                         }
@@ -560,7 +561,7 @@ object ModerationPart : DiscordModulePart() {
                                 configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Log Message Deletes | DustreanNET"
+                                        title = "Log Message Deletes | $networkName"
                                         description = "Channel ${channel.mention} removed from log message deletes"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -573,7 +574,7 @@ object ModerationPart : DiscordModulePart() {
                             ioScope.launch {
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Log Message Deletes | DustreanNET"
+                                        title = "Log Message Deletes | $networkName"
                                         description =
                                             "Log message deletes is a feature that logs all message deletes in the specified channels."
                                         field {

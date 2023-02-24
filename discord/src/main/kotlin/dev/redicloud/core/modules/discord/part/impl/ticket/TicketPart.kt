@@ -30,6 +30,7 @@ import dev.redicloud.api.ICoreAPI
 import dev.redicloud.api.utils.ExceptionHandler.haste
 import dev.redicloud.api.utils.extension.ExternalRMap
 import dev.redicloud.api.utils.extension.getExternalMap
+import dev.redicloud.api.utils.networkName
 import dev.redicloud.core.modules.discord.DiscordModuleMain
 import dev.redicloud.core.modules.discord.data.chat.createMessage
 import dev.redicloud.core.modules.discord.data.chat.respondEphemeral
@@ -112,7 +113,7 @@ object TicketPart : DiscordModulePart() {
                             if (archiveChannel != null) {
                                 archiveChannel.asChannelOf<TextChannel>().createMessage {
                                     embed {
-                                        title = "Archive | DustreanNET"
+                                        title = "Archive | $networkName"
                                         description = "Ticket ID: ${ticket.id}\n" +
                                                 "Ticket Owner: <@${ticket.creatorId}>\n" +
                                                 "Ticket Channel: <#${ticket.channelId}>\n" +
@@ -162,7 +163,7 @@ object TicketPart : DiscordModulePart() {
         if (count >= config.maxOpenTicketsPerUser) {
             interaction.respondEphemeral {
                 embed {
-                    title = "Error | DustreanNET"
+                    title = "Error | $networkName"
                     description = "You have reached the maximum amount of open tickets!"
                     color = Color(250, 0, 0)
                     useDefaultDesign(user)
@@ -217,7 +218,7 @@ object TicketPart : DiscordModulePart() {
 
                 interaction.respondEphemeral {
                     embed {
-                        title = "Ticket | DustreanNET"
+                        title = "Ticket | $networkName"
                         description =
                             "Your ticket has been created successfully and can be found here: ${it.asChannelOf<TextChannel>().mention}"
                         useDefaultDesign(user)
@@ -242,7 +243,7 @@ object TicketPart : DiscordModulePart() {
             if (user == null) return
             interaction!!.respondEphemeral {
                 embed {
-                    title = "Error | DustreanNET"
+                    title = "Error | $networkName"
                     description = "This ticket does not exist! Please contact a staff member!"
                     color = Color(250, 0, 0)
                     useDefaultDesign(user)
@@ -254,7 +255,7 @@ object TicketPart : DiscordModulePart() {
             if (user.id.value.toLong() != ticket.creatorId && !user.roleIds.contains(config.supportRole.snowflake) && !user.isBot) {
                 interaction!!.respondEphemeral {
                     embed {
-                        title = "Error | DustreanNET"
+                        title = "Error | $networkName"
                         description = "You are not allowed to close this ticket!"
                         color = Color(250, 0, 0)
                         useDefaultDesign(user)
@@ -267,7 +268,7 @@ object TicketPart : DiscordModulePart() {
             if (interaction == null) return
             interaction.respondEphemeral {
                 embed {
-                    title = "Error | DustreanNET"
+                    title = "Error | $networkName"
                     description = "This ticket is already closed!"
                     color = Color(250, 0, 0)
                     useDefaultDesign(user)
@@ -287,7 +288,7 @@ object TicketPart : DiscordModulePart() {
         } else if (user == null) {
             channel.createMessage {
                 embed {
-                    title = "Ticket | DustreanNET"
+                    title = "Ticket | $networkName"
                     description = "This ticket has been closed due the user leaving the server!"
                     useDefaultDesign(dev.redicloud.core.modules.discord.kord.getSelf())
                 }
@@ -349,7 +350,7 @@ object TicketPart : DiscordModulePart() {
                 if (ticket == null) {
                     interaction.respondEphemeral {
                         embed {
-                            title = "Error | DustreanNET"
+                            title = "Error | $networkName"
                             description = "This ticket does not exist! Please contact a staff member!"
                             color = Color(250, 0, 0)
                             useDefaultDesign(interaction.user)
@@ -360,7 +361,7 @@ object TicketPart : DiscordModulePart() {
                 if (!ticket.isOpen()) {
                     interaction.respondEphemeral {
                         embed {
-                            title = "Error | DustreanNET"
+                            title = "Error | $networkName"
                             description = "This ticket is already closed!"
                             color = Color(250, 0, 0)
                             useDefaultDesign(interaction.user)
@@ -384,7 +385,7 @@ object TicketPart : DiscordModulePart() {
                 if (ticket == null) {
                     interaction.respondEphemeral {
                         embed {
-                            title = "Error | DustreanNET"
+                            title = "Error | $networkName"
                             description = "This ticket does not exist! Please contact a staff member!"
                             color = Color(250, 0, 0)
                             useDefaultDesign(interaction.user)
@@ -395,7 +396,7 @@ object TicketPart : DiscordModulePart() {
                 if (interaction.user.id.value.toLong() != ticket.creatorId && !interaction.user.roleIds.contains(config.supportRole.snowflake)) {
                     interaction.respondEphemeral {
                         embed {
-                            title = "Error | DustreanNET"
+                            title = "Error | $networkName"
                             description = "You are not allowed to close this ticket!"
                             color = Color(250, 0, 0)
                             useDefaultDesign(interaction.user)
@@ -406,7 +407,7 @@ object TicketPart : DiscordModulePart() {
                 if (!ticket.isOpen()) {
                     interaction.respondEphemeral {
                         embed {
-                            title = "Error | DustreanNET"
+                            title = "Error | $networkName"
                             description = "This ticket is already closed!"
                             color = Color(250, 0, 0)
                             useDefaultDesign(interaction.user)
@@ -416,7 +417,7 @@ object TicketPart : DiscordModulePart() {
                 }
                 interaction.respondPublic {
                     embed {
-                        title = "Ticket | DustreanNET"
+                        title = "Ticket | $networkName"
                         description = "This ticket has been closed by ${interaction.user.mention}"
                         color = Color(0, 250, 0)
                         useDefaultDesign(interaction.user)
@@ -465,7 +466,7 @@ object TicketPart : DiscordModulePart() {
                                 val channelBehavior = interaction.command.channels["channel"] ?: interaction.channel
                                 channelBehavior.asChannelOf<TextChannel>().createMessage {
                                     embed {
-                                        title = "Ticket | DustreanNET"
+                                        title = "Ticket | $networkName"
                                         description = "Click the button below to open a ticket"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -479,7 +480,7 @@ object TicketPart : DiscordModulePart() {
                                     ICoreAPI.INSTANCE.configManager.saveConfig(config)
                                     interaction.respondEphemeral {
                                         embed {
-                                            title = "Info | DustreanNET"
+                                            title = "Info | $networkName"
                                             description =
                                                 "The ticket open message has been created in ${channelBehavior.mention}"
                                             useDefaultDesign(interaction.user)
@@ -500,7 +501,7 @@ object TicketPart : DiscordModulePart() {
                                     if (interaction.command.strings["message"] == null) {
                                         interaction.respondEphemeral {
                                             embed {
-                                                title = "Info | DustreanNET"
+                                                title = "Info | $networkName"
                                                 description = "The current inactivity notify message is:"
                                                 useDefaultDesign(interaction.user)
                                             }
@@ -509,7 +510,7 @@ object TicketPart : DiscordModulePart() {
                                     } else {
                                         interaction.respondEphemeral {
                                             embed {
-                                                title = "Error | DustreanNET"
+                                                title = "Error | $networkName"
                                                 description = "The message is invalid! Please check your json syntax!"
                                                 color = Color(250, 0, 0)
                                                 useDefaultDesign(interaction.user)
@@ -522,7 +523,7 @@ object TicketPart : DiscordModulePart() {
                                 ICoreAPI.INSTANCE.configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description = "The inactivity notify message has been set to:"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -542,7 +543,7 @@ object TicketPart : DiscordModulePart() {
                                     if (interaction.command.strings["message"] == null) {
                                         interaction.respondEphemeral {
                                             embed {
-                                                title = "Info | DustreanNET"
+                                                title = "Info | $networkName"
                                                 description = "The current inactivity close message is:"
                                                 useDefaultDesign(interaction.user)
                                             }
@@ -551,7 +552,7 @@ object TicketPart : DiscordModulePart() {
                                     } else {
                                         interaction.respondEphemeral {
                                             embed {
-                                                title = "Error | DustreanNET"
+                                                title = "Error | $networkName"
                                                 description = "The message is invalid! Please check your json syntax!"
                                                 color = Color(250, 0, 0)
                                                 useDefaultDesign(interaction.user)
@@ -564,7 +565,7 @@ object TicketPart : DiscordModulePart() {
                                 ICoreAPI.INSTANCE.configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description = "The inactivity close message has been set to:"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -584,7 +585,7 @@ object TicketPart : DiscordModulePart() {
                                     if (interaction.command.strings["message"] == null) {
                                         interaction.respondEphemeral {
                                             embed {
-                                                title = "Info | DustreanNET"
+                                                title = "Info | $networkName"
                                                 description = "The current close confirm message is:"
                                                 useDefaultDesign(interaction.user)
                                             }
@@ -593,7 +594,7 @@ object TicketPart : DiscordModulePart() {
                                     } else {
                                         interaction.respondEphemeral {
                                             embed {
-                                                title = "Error | DustreanNET"
+                                                title = "Error | $networkName"
                                                 description = "The message is invalid! Please check your json syntax!"
                                                 color = Color(250, 0, 0)
                                                 useDefaultDesign(interaction.user)
@@ -606,7 +607,7 @@ object TicketPart : DiscordModulePart() {
                                 ICoreAPI.INSTANCE.configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description = "The close confirm message has been set to:"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -626,7 +627,7 @@ object TicketPart : DiscordModulePart() {
                                     if (interaction.command.strings["message"] == null) {
                                         interaction.respondEphemeral {
                                             embed {
-                                                title = "Info | DustreanNET"
+                                                title = "Info | $networkName"
                                                 description = "The current welcome message is:"
                                                 useDefaultDesign(interaction.user)
                                             }
@@ -635,7 +636,7 @@ object TicketPart : DiscordModulePart() {
                                     } else {
                                         interaction.respondEphemeral {
                                             embed {
-                                                title = "Error | DustreanNET"
+                                                title = "Error | $networkName"
                                                 description = "The message is invalid! Please check your json syntax!"
                                                 color = Color(250, 0, 0)
                                                 useDefaultDesign(interaction.user)
@@ -648,7 +649,7 @@ object TicketPart : DiscordModulePart() {
                                 ICoreAPI.INSTANCE.configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description = "The welcome message has been set to:"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -668,7 +669,7 @@ object TicketPart : DiscordModulePart() {
                                     if (interaction.command.strings["message"] == null) {
                                         interaction.respondEphemeral {
                                             embed {
-                                                title = "Info | DustreanNET"
+                                                title = "Info | $networkName"
                                                 description = "The current ticket rule config message is:"
                                                 useDefaultDesign(interaction.user)
                                             }
@@ -677,7 +678,7 @@ object TicketPart : DiscordModulePart() {
                                     } else {
                                         interaction.respondEphemeral {
                                             embed {
-                                                title = "Error | DustreanNET"
+                                                title = "Error | $networkName"
                                                 description = "The message is invalid! Please check your json syntax!"
                                                 color = Color(250, 0, 0)
                                                 useDefaultDesign(interaction.user)
@@ -690,7 +691,7 @@ object TicketPart : DiscordModulePart() {
                                 ICoreAPI.INSTANCE.configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description = "The ticket rule config message has been set to:"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -737,7 +738,7 @@ object TicketPart : DiscordModulePart() {
                         if (ticket == null) {
                             interaction.respondEphemeral {
                                 embed {
-                                    title = "Error | DustreanNET"
+                                    title = "Error | $networkName"
                                     description = "This ticket does not exist! Please contact a staff member!"
                                     color = Color(250, 0, 0)
                                     useDefaultDesign(interaction.user)
@@ -748,7 +749,7 @@ object TicketPart : DiscordModulePart() {
                         if (interaction.user.id.value.toLong() != ticket.creatorId && !interaction.user.roleIds.contains(config.supportRole.snowflake)) {
                             interaction.respondEphemeral {
                                 embed {
-                                    title = "Error | DustreanNET"
+                                    title = "Error | $networkName"
                                     description = "You are not allowed to add users to this ticket!"
                                 }
                             }
@@ -767,7 +768,7 @@ object TicketPart : DiscordModulePart() {
                         }
                         interaction.respondPublic {
                             embed {
-                                title = "Info | DustreanNET"
+                                title = "Info | $networkName"
                                 description = "The user ${user.mention} has been added to this ticket!"
                                 useDefaultDesign(interaction.user)
                             }
@@ -785,7 +786,7 @@ object TicketPart : DiscordModulePart() {
                         if (ticket == null) {
                             interaction.respondEphemeral {
                                 embed {
-                                    title = "Error | DustreanNET"
+                                    title = "Error | $networkName"
                                     description = "This ticket does not exist! Please contact a staff member!"
                                     color = Color(250, 0, 0)
                                     useDefaultDesign(interaction.user)
@@ -796,7 +797,7 @@ object TicketPart : DiscordModulePart() {
                         if (interaction.user.id.value.toLong() != ticket.creatorId && !interaction.user.roleIds.contains(config.supportRole.snowflake)) {
                             interaction.respondEphemeral {
                                 embed {
-                                    title = "Error | DustreanNET"
+                                    title = "Error | $networkName"
                                     description = "You are not allowed to remove users from this ticket!"
                                 }
                             }
@@ -815,7 +816,7 @@ object TicketPart : DiscordModulePart() {
                         }
                         interaction.respondPublic {
                             embed {
-                                title = "Info | DustreanNET"
+                                title = "Info | $networkName"
                                 description = "The user ${user.mention} has been removed from this ticket!"
                                 useDefaultDesign(interaction.user)
                             }
@@ -830,7 +831,7 @@ object TicketPart : DiscordModulePart() {
                         if (ticket == null) {
                             interaction.respondEphemeral {
                                 embed {
-                                    title = "Error | DustreanNET"
+                                    title = "Error | $networkName"
                                     description =
                                         "This ticket does not exist! Please contact a staff member if you think this is an error!"
                                     color = Color(250, 0, 0)
@@ -846,7 +847,7 @@ object TicketPart : DiscordModulePart() {
                         val creator = kord.getUser(ticket.creatorId.snowflake)
                         interaction.respondEphemeral {
                             embed {
-                                title = "Ticket | DustreanNET"
+                                title = "Ticket | $networkName"
                                 description = ":round_pushpin: Ticket ID: ${
                                     ticket.id
                                 }\n" + ":bellhop: Creator: <@${
@@ -898,7 +899,7 @@ object TicketPart : DiscordModulePart() {
                             } catch (e: Exception) {
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Error | DustreanNET"
+                                        title = "Error | $networkName"
                                         description = "The id is not valid!"
                                         color = Color(250, 0, 0)
                                         useDefaultDesign(interaction.user)
@@ -909,7 +910,7 @@ object TicketPart : DiscordModulePart() {
                             val ticket = tickets[id] ?: run {
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Error | DustreanNET"
+                                        title = "Error | $networkName"
                                         description = "The ticket does not exist!"
                                         color = Color(250, 0, 0)
                                         useDefaultDesign(interaction.user)
@@ -922,7 +923,7 @@ object TicketPart : DiscordModulePart() {
                             } catch (e: Exception) {
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Error | DustreanNET"
+                                        title = "Error | $networkName"
                                         description = "The time is not valid!"
                                         color = Color(250, 0, 0)
                                         useDefaultDesign(interaction.user)
@@ -935,7 +936,7 @@ object TicketPart : DiscordModulePart() {
                                 ticket.update()
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description = "The last user message has been set to ${
                                             SimpleDateFormat("HH:mm dd.MM.yyyy").format(time)
                                         }"
@@ -945,7 +946,7 @@ object TicketPart : DiscordModulePart() {
                             } else {
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description = "The last user message time has been set to ${
                                             SimpleDateFormat("HH:mm dd.MM.yyyy").format(time)
                                         }"
@@ -970,7 +971,7 @@ object TicketPart : DiscordModulePart() {
                             } catch (e: Exception) {
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Error | DustreanNET"
+                                        title = "Error | $networkName"
                                         description = "The id is not valid!"
                                         color = Color(250, 0, 0)
                                         useDefaultDesign(interaction.user)
@@ -981,7 +982,7 @@ object TicketPart : DiscordModulePart() {
                             val ticket = tickets[id] ?: run {
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Error | DustreanNET"
+                                        title = "Error | $networkName"
                                         description = "The ticket does not exist!"
                                         color = Color(250, 0, 0)
                                         useDefaultDesign(interaction.user)
@@ -995,7 +996,7 @@ object TicketPart : DiscordModulePart() {
                                 ticket.update()
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description = "The inactivity notified state has been set to $state"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -1003,7 +1004,7 @@ object TicketPart : DiscordModulePart() {
                             } else {
                                 interaction.respondEphemeral {
                                     embed {
-                                        title = "Info | DustreanNET"
+                                        title = "Info | $networkName"
                                         description = "The inactivity notified state is $state"
                                         useDefaultDesign(interaction.user)
                                     }
@@ -1020,7 +1021,7 @@ object TicketPart : DiscordModulePart() {
                         if (role == null) {
                             interaction.respondEphemeral {
                                 embed {
-                                    title = "Error | DustreanNET"
+                                    title = "Error | $networkName"
                                     description =
                                         "The archive-view role does not exist! Please contact an administrator!"
                                     color = Color(250, 0, 0)
@@ -1034,7 +1035,7 @@ object TicketPart : DiscordModulePart() {
                             member.removeRole(role.id)
                             interaction.respondEphemeral {
                                 embed {
-                                    title = "Info | DustreanNET"
+                                    title = "Info | $networkName"
                                     description = "You can´t view archived tickets anymore!"
                                     useDefaultDesign(interaction.user)
                                 }
@@ -1043,7 +1044,7 @@ object TicketPart : DiscordModulePart() {
                             member.addRole(role.id)
                             interaction.respondEphemeral {
                                 embed {
-                                    title = "Info | DustreanNET"
+                                    title = "Info | $networkName"
                                     description = "You can now view archived tickets!"
                                     useDefaultDesign(interaction.user)
                                 }

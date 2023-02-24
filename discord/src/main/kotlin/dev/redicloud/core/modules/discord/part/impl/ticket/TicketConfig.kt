@@ -2,6 +2,7 @@ package dev.redicloud.core.modules.discord.part.impl.ticket
 
 import dev.kord.core.entity.User
 import dev.redicloud.api.ICoreAPI
+import dev.redicloud.api.utils.networkName
 import dev.redicloud.core.modules.discord.data.AbstractDiscordConfig
 import dev.redicloud.core.modules.discord.data.chat.embed
 import dev.redicloud.core.modules.discord.data.chat.Emoji
@@ -33,28 +34,28 @@ class TicketConfig() : AbstractDiscordConfig() {
     var maxOpenTicketsPerUser = 1
     var inactivityNotifyMessage = message {
         embed {
-            title = "Inactivity | DustreanNET"
+            title = "Inactivity | $networkName"
             description = "Your ticket has been inactive for ${tagAfterNoResponse.milliseconds.inWholeDays} days. If you still need help, please write a message to not get your ticket closed automatically in ${closeAfterNoResponse.milliseconds.inWholeDays - tagAfterNoResponse.milliseconds.inWholeDays} days."
             color = intArrayOf(250, 0, 0)
         }
     }
     var inactivityCloseMessage = message {
         embed {
-            title = "Inactivity | DustreanNET"
+            title = "Inactivity | $networkName"
             description = "Your ticket has been inactive for ${closeAfterNoResponse.milliseconds.inWholeDays} days and has been closed automatically!"
             color = intArrayOf(250, 0, 0)
         }
     }
     var closeConfirmMessage = message {
         embed {
-            title = "Confirm | DustreanNET"
+            title = "Confirm | $networkName"
             description = "Are you sure you want to close this ticket?"
             color = intArrayOf(250, 0, 0)
         }
     }
     var ticketWelcomeMessage = message {
         embed {
-            title = "Welcome | DustreanNET"
+            title = "Welcome | $networkName"
             description = "Welcome {user},\n" +
                     "we are glad that you have reached out to us :wave:\n" +
                     "\n" +
@@ -74,7 +75,7 @@ class TicketConfig() : AbstractDiscordConfig() {
     }
     var confirmMessage = message {
         embed {
-            title = "Confirmed | DustreanNET"
+            title = "Confirmed | $networkName"
             description = "Your ticket has been confirmed! Please explain your issue in detail! A staff member will contact you as soon as possible!"
             defaultDesign = true
         }

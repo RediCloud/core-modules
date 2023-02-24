@@ -14,7 +14,7 @@ class UpTimeCommand : AbstractInputCommand("uptime", null, "Information about th
             ioScope.launch {
                 interaction.respondEphemeral {
                     embed {
-                        title = "Uptime | DustreanNET"
+                        title = "Uptime | $networkName"
                         description = "The bot has been running for ${
                             Duration.ofMillis((System.currentTimeMillis() - started)).toHours()
                         }"
