@@ -213,13 +213,13 @@ object RulePart : DiscordModulePart() {
                             }
                             val emoji =
                                 DiscordPartialEmoji(id?.snowflake, name, OptionalBoolean.Value(animated ?: false))
-                            dev.redicloud.core.modules.discord.ioScope.launch {
+                            ioScope.launch {
                                 config.acceptEmoji = emoji {
                                     id = emoji.id?.value?.toLong()
                                     name = emoji.name
                                     animated = emoji.animated.asOptional.value ?: false
                                 }
-                                dev.redicloud.core.modules.discord.configManager.saveConfig(config)
+                                configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
                                         title = "Info | $networkName"
@@ -236,9 +236,9 @@ object RulePart : DiscordModulePart() {
                         }
                         perform(this@group, this@subCommand) {
                             val role = interaction.command.roles["role"]!!
-                            dev.redicloud.core.modules.discord.ioScope.launch {
+                            ioScope.launch {
                                 config.acceptRole = role.id.value.toLong()
-                                dev.redicloud.core.modules.discord.configManager.saveConfig(config)
+                                configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
                                         title = "Info | $networkName"
@@ -254,7 +254,7 @@ object RulePart : DiscordModulePart() {
                             required = false
                         }
                         perform(this@group, this@subCommand) {
-                            dev.redicloud.core.modules.discord.ioScope.launch {
+                            ioScope.launch {
                                 val channelBehavior = interaction.command.channels["channel"] ?: interaction.channel
                                 channelBehavior.asChannelOf<GuildMessageChannel>()
                                     .createMessage(config.ruleMessage, interaction.user, mutableMapOf()) {
@@ -264,7 +264,7 @@ object RulePart : DiscordModulePart() {
                                             }
                                         }
                                     }.also {
-                                        dev.redicloud.core.modules.discord.ioScope.launch {
+                                        ioScope.launch {
                                             this@perform.interaction.respondEphemeral {
                                                 embed {
                                                     title = "Info | $networkName"
@@ -284,7 +284,7 @@ object RulePart : DiscordModulePart() {
                         perform(this@group, this@subCommand) {
                             val message = interaction.command.messages["message"]
                             if (message == null) {
-                                dev.redicloud.core.modules.discord.ioScope.launch {
+                                ioScope.launch {
                                     interaction.respondEphemeral {
                                         embed {
                                             title = "Error | $networkName"
@@ -296,9 +296,9 @@ object RulePart : DiscordModulePart() {
                                 }
                                 return@perform
                             }
-                            dev.redicloud.core.modules.discord.ioScope.launch {
+                            ioScope.launch {
                                 config.ruleMessage = message
-                                dev.redicloud.core.modules.discord.configManager.saveConfig(config)
+                                configManager.saveConfig(config)
                                 interaction.respondEphemeral {
                                     embed {
                                         title = "Info | $networkName"
