@@ -31,13 +31,9 @@ import dev.redicloud.api.utils.ExceptionHandler.haste
 import dev.redicloud.api.utils.extension.ExternalRMap
 import dev.redicloud.api.utils.extension.getExternalMap
 import dev.redicloud.api.utils.networkName
-import dev.redicloud.core.modules.discord.DiscordModuleMain
 import dev.redicloud.core.modules.discord.data.chat.createMessage
 import dev.redicloud.core.modules.discord.data.chat.respondEphemeral
 import dev.redicloud.core.modules.discord.data.chat.respondPublic
-import dev.redicloud.core.modules.discord.ioScope
-import dev.redicloud.core.modules.discord.kord
-import dev.redicloud.core.modules.discord.mainGuild
 import dev.redicloud.core.modules.discord.part.DiscordModulePart
 import dev.redicloud.core.modules.discord.util.commands.CommandBuilder
 import dev.redicloud.core.modules.discord.util.commands.inputCommand
@@ -454,7 +450,7 @@ object TicketPart : DiscordModulePart() {
     fun getTicket(channelId: Snowflake): Ticket? = tickets.values.find { it.channelId == channelId.value.toLong() }
 
     private fun loadConfigCommand() {
-        dev.redicloud.core.modules.discord.DiscordModuleMain.INSTANCE.configCommands.forEach {
+        dev.redicloud.core.modules.discord.DiscordModule.INSTANCE.configCommands.forEach {
             it.value.apply {
                 group("ticket", "Configure the ticket module") {
                     subCommand("create", "Create the open message button") {

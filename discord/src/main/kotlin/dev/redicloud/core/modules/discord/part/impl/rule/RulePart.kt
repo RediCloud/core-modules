@@ -169,7 +169,7 @@ object RulePart : DiscordModulePart() {
     }
 
     private fun loadConfigCommand() {
-        DiscordModuleMain.INSTANCE.configCommands.forEach {
+        DiscordModule.INSTANCE.configCommands.forEach {
             it.value.apply {
                 group("rules", "Configure the rule module") {
                     subCommand("emoji", "Set the emoji for the accept button") {

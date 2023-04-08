@@ -9,7 +9,7 @@ import dev.kord.rest.builder.message.create.embed
 import kotlinx.coroutines.launch
 import dev.redicloud.api.ICoreAPI
 import dev.redicloud.api.utils.networkName
-import dev.redicloud.core.modules.discord.DiscordModuleMain
+import dev.redicloud.core.modules.discord.DiscordModule
 import dev.redicloud.core.modules.discord.logChannel
 import dev.redicloud.core.modules.discord.part.parts
 import dev.redicloud.core.modules.discord.util.message.useDefaultDesign
@@ -28,7 +28,7 @@ class StopCommand() : AbstractInputCommand("stop", null, "Stop the bot") {
                     }
                 }
                 notifyStop(interaction.user)
-                DiscordModuleMain.INSTANCE.onDisable(ICoreAPI.INSTANCE)
+                DiscordModule.INSTANCE.onDisable(ICoreAPI.INSTANCE)
             }
         }
     }

@@ -3,6 +3,6 @@
   "description": "The module which provides the discord bot",
   "version": "1.0.0-SNAPSHOT",
   "mainClasses": {
-    "STANDALONE": "dev.redicloud.core.modules.discord.DiscordModuleMain"
+    "STANDALONE": "dev.redicloud.core.modules.discord.DiscordModule"
   }
 }

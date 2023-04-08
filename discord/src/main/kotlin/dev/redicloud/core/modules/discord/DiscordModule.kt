@@ -39,16 +39,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 @Suppress("unused")
-class DiscordModuleMain : Module() {
+class DiscordModule : Module() {
 
     companion object {
-        lateinit var INSTANCE: DiscordModuleMain
+        lateinit var INSTANCE: DiscordModule
     }
 
     var configCommands: MutableMap<Snowflake, InputCommandBuilder> = mutableMapOf()
 
     override fun onLoad(api: ICoreAPI) = runBlocking {
-        INSTANCE = this@DiscordModuleMain
+        INSTANCE = this@DiscordModule
         coreAPI = api
         configManager = api.configManager
         config = if (!configManager.exists("discord:bot")) {
