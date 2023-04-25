@@ -1,0 +1,10 @@
+{
+  "name": "Monitor Module",
+  "description": "Provides a monitoring service for system resources and application metrics.",
+  "version": "1.0.0-SNAPSHOT",
+  "mainClasses": {
+    "MINESTOM": "dev.redicloud.core.modules.monitor.minestom.MinestomMonitorModule",
+    "PAPER": "dev.redicloud.core.modules.monitor.paper.PaperMonitorModule",
+    "VELOCITY": "dev.redicloud.core.modules.monitor.velocity.VelocityMonitorModule"
+  }
+}
