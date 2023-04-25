@@ -41,6 +41,7 @@ fun Deploy_main.runCommandSync(it: String) {
 }
 val files = listOf(
     "discord/build/libs/discord.jar" to "/home/core/modules/discord.jar",
+    "discord/build/libs/monitor.jar" to "/home/core/modules/monitor.jar",
 )
 runCommandSync("service core-standalone stop")
 files.forEach {
