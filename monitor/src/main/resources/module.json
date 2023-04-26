@@ -3,8 +3,8 @@
   "description": "Provides a monitoring service for system resources and application metrics.",
   "version": "1.0.0-SNAPSHOT",
   "mainClasses": {
-    "MINESTOM": "dev.redicloud.core.modules.monitor.minestom.MinestomMonitorModule",
-    "PAPER": "dev.redicloud.core.modules.monitor.paper.PaperMonitorModule",
-    "VELOCITY": "dev.redicloud.core.modules.monitor.velocity.VelocityMonitorModule"
+    "MINESTOM": "dev.redicloud.core.modules.monitor.plattform.minestom.MinestomMonitorModule",
+    "PAPER": "dev.redicloud.core.modules.monitor.plattform.paper.PaperMonitorModule",
+    "VELOCITY": "dev.redicloud.core.modules.monitor.plattform.velocity.VelocityMonitorModule"
   }
 }
