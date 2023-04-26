@@ -5,3 +5,7 @@ plugins {
     `velocity-script`
     kotlin("jvm")
 }
+tasks.jar {
+    duplicatesStrategy = DuplicatesStrategy.WARN
+    archiveFileName.set("${project.name}.jar")
+}
